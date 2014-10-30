@@ -1,0 +1,18 @@
+############ Gnuplot
+
+
+set title 'Erreur L2H1 en temps pour CN'
+set autoscale
+set xlabel 'log(pas)'
+set ylabel 'log(erreur)'
+
+plot 'convergence_fin_BDF2 P2H1.gp' u (log($1)):(log($2)) w line t 'BDF2'
+
+
+replot 2*x w line t 'ordre 2'
+
+set term postscript enhanced color
+set output "convergence_BDF2_L2H1.eps"
+replot
+unset output
+

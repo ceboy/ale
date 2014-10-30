@@ -1,0 +1,28 @@
+############ Gnuplot
+
+set title 'Erreur LinfL2 en espace pour EI'
+set xlabel 'nbrtriangle'
+set ylabel 'log(erreur)'
+set autoscale
+
+
+plot '<paste nbrtrianglem.gp convergence_P2_0.005_LinfL2.gp'u 2:(log($4)/log(10))  t 'P2'
+
+replot '<paste nbrtrianglem.gp convergence_m_P2_0.004_LinfL2.gp'u 2:(log($4)/log(10))  t 'P2m'
+
+replot '<paste nbrtrianglem1.gp convergence_m1_P2_0.004_LinfL2.gp'u 2:(log($4)/log(10))  t 'P2m1'
+
+replot '<paste nbrtrianglem2.gp convergence_m2_P2_0.004_LinfL2.gp'u 2:(log($4)/log(10))  t 'P2m2'
+
+replot '<paste nbrtrianglem3.gp convergence_m3_P2_0.004_LinfL2.gp'u 2:(log($4)/log(10))  t 'P2m3'
+
+replot '<paste nbrtrianglem4.gp convergence_m4_P2_0.004_LinfL2.gp'u 2:(log($4)/log(10))  t 'P2m4'
+
+replot '<paste nbrtrianglem5.gp convergence_m5_P2_0.004_LinfL2.gp'u 2:(log($4)/log(10))  t 'P2m5'
+
+replot '<paste nbrtrianglem6.gp convergence_m6_P2_0.004_LinfL2.gp'u 2:(log($4)/log(10))  t 'P2m6'
+
+set term postscript enhanced color
+set output "convergence_EI_0.005_LinfL2_test.eps"
+replot
+unset output

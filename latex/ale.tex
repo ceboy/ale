@@ -1,0 +1,482 @@
+\documentclass{article}
+%\documentclass{amsart}
+%\documentclass{ws-m3as}
+%\documentclass{m2an}
+% SPRINGER
+%\documentclass{svjour3}                    % onecolumn (standard format)
+%\documentclass[smallextended]{svjour3}     % onecolumn (second format)
+%\documentclass[twocolumn]{svjour3}         % twocolumn
+%------------------------------------------------------------
+% Defining page layout:
+\pagestyle{plain} 
+\setlength{\paperwidth}{210mm}
+\setlength{\paperheight}{297mm} 
+% on compte du bord du papier
+\setlength{\hoffset}{-10mm}
+\setlength{\voffset}{0mm} 
+\setlength{\textwidth}{150mm}
+\setlength{\textheight}{200mm} 
+% marge gauche
+\setlength{\evensidemargin}{0mm}
+%\setlength\oddsidemargin{3cm}
+% entete
+\setlength{\topmargin}{0mm} 
+%\setlength{\headheight}{0mm}
+\setlength{\headsep}{10mm}
+%pied de page
+\setlength{\footskip}{20mm} 
+% notes en marge droite
+\setlength{\marginparsep}{0mm}
+\setlength{\marginparwidth}{0mm} 
+%\setlength\marginparpush{0cm}
+% 
+\parindent=0.5cm
+\linespread{1.2}
+% \textwidth 455pt \oddsidemargin 0pt \evensidemargin 0pt 
+% \headsep 0pt \headheight 0pt \textheight 655pt \parskip 10pt
+% \def\arraystretch{1.15}
+% \renewcommand{\floatpagefraction}{0.75}
+%------------------------------------------------------------
+% Adding packages:
+%\usepackage{url}
+% mathematical symbols
+\usepackage{latexsym}
+\usepackage{amsmath}%
+%\usepackage{amsfonts}%
+\usepackage{amssymb}%
+\usepackage{amsthm}
+%\usepackage{dina4}
+%\usepackage{mathtools} % (over/under)brackets
+\usepackage{bm}
+% graphical tools
+\usepackage{graphicx}
+%\usepackage{psfrag,psfig}
+%\graphicspath{./fig/}
+%\usepackage[pdftex]{graphicx}
+%\usepackage{epsf}
+%\usepackage{epsfig}
+\usepackage[all]{xy}
+\usepackage{hhline}
+%\usepackage{exscale,cmmib57}
+\usepackage{epic} %,eepic}% attention, dashline disparait avec eepic
+%\usepackage{subfigure}
+%\DeclareGraphicsExtensions{.jpg,.png,.pdf}
+%\DeclareGraphicsRule{*}{mps}{*}{}
+%\graphicspath{{fig/}}
+% packages for layout
+%\usepackage{geometry}
+%\usepackage{afterpage}
+%\usepackage{fullpage}
+%\usepackage{fancyhdr}
+% my additional package for fonts featuring
+%\usepackage{mathptmx}      % SPRINGER use Times fonts if available on your TeX system
+\usepackage[english]{babel}
+%\usepackage[francais,english]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage[T1]{fontenc}
+%\usepackage[cyr]{aeguill} % guillemets
+% my additional package for showing the labels
+%\usepackage{showkeys}
+%\usepackage[notref,notcite]{showkeys}
+%\usepackage{showlabels}
+%\usepackage{showtags}
+%\usepackage{drafcopy}
+%\usepackage{float}
+\usepackage{enumerate} % to control the display of the enumeration counter
+%------------------------------------------------------------
+% Counters
+%\newcounter{qn}[section]
+%------------------------------------------------------------
+
+%\smartqed  % SPRINGER flush right qed marks, e.g. at end of proof
+% Theorem like environments
+\newtheorem{theorem}{Theorem}
+\theoremstyle{plain}
+\newtheorem{acknowledgement}{Acknowledgement}
+\newtheorem{algorithm}{Algorithm}
+\newtheorem{axiom}{Axiom}
+%\newtheorem{case}{Case}
+%\newtheorem{claim}{Claim}
+%\newtheorem{conclusion}{Conclusion}
+%\newtheorem{condition}{Condition}
+%\newtheorem{conjecture}{Conjecture}
+\newtheorem{corollary}{Corollary}
+%\newtheorem{criterion}{Criterion}
+\newtheorem{definition}{Definition}
+\newtheorem{example}{Example}
+%\newtheorem{exercise}{Exercise}
+\newtheorem{lemma}{Lemma}
+\newtheorem{notation}{Notation}
+\newtheorem{problem}{Problem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+%\newtheorem{solution}{Solution}
+\newtheorem{summary}{Summary}
+\numberwithin{equation}{section} % counter !!!!!!!
+%\newtheorem{theorem}{Theorem}[section]
+%\newtheorem{lemma}{Lemma}[section]
+%\newtheorem{proposition}{Proposition}[section]
+%\newtheorem{assumption}{Assumption}[section]
+%\newtheorem{corollary}{Corollary}[section]
+%\newtheorem{definition}{Definition}[section]
+%\newtheorem{conjecture}{Conjecture}[section]
+%\newtheorem{problem}{Problem}[section]
+%\newtheorem{remark}{Remark}[section]
+\newcommand\beq{\begin{equation}}
+\newcommand\eeq{\end{equation}}
+\renewcommand{\emph}{\textbf}
+%\renewcommand{\emph}[1]{{\large \slshape #1}}
+%------------------------------------------------------------
+%------------------------------------------------------------
+% Delimiters, norms, inner products...:
+%
+\newcommand{\brk}[1]{\left(#1\right)}          % \brk{.}     => (.)
+\newcommand{\E}[1]{\mathbb{E}\brk{#1}}
+\newcommand{\V}[1]{\mathbb{V}\brk{#1}}
+\def\E{\mathbb{E}}
+\def\V{\mathbb{V}}
+\newcommand{\Brk}[1]{\left[#1\right]}          % \Brk{.}     => [.]
+\newcommand{\BRK}[1]{\left\{#1\right\}}        % \BRK{.}     => {.}
+\newcommand{\Average}[1]{\left<#1\right>}      % \Average{.} => <.>
+\newcommand{\mean}[1]{\overline{#1}}           % \mean{.}
+\newcommand{\Abs}[1]{\left| #1 \right|}        % \Abs{.}     => |.|
+\newcommand{\Scal}[2]{\left(#1,#2\right)}      % \Scal{.}    => (.;.)
+\newcommand{\Norm}[1]{\left\| #1 \right\|}     % \Norm{.}    => ||.||
+\newcommand{\mymat}[1]{\begin{pmatrix} #1 \end{pmatrix}}
+\newcommand{\jump}[1]{[\![#1]\!]}
+%
+%------------------------------------------------------------
+% Special characters and shortcuts:
+%
+% my constants and parameters
+\newcommand{\dd}{\frac{d(d+1)}{2}}
+\newcommand{\dt}{\Delta t}
+\newcommand{\Wi}{{\text{Wi}}}
+\renewcommand{\Re}{{\text{Re}}}
+\newcommand{\Ma}{{\text{Ma}}}
+\newcommand{\Ra}{{\text{Ra}}}
+\newcommand{\Fr}{{\text{Fr}}}
+\renewcommand{\Pr}{{\text{Pr}}}
+\newcommand{\Gr}{{\text{Gr}}}
+\newcommand{\e}{\varepsilon}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\DD}{\mathrm{D}}
+\newcommand{\f}{\boldsymbol{f}}
+\newcommand{\I}{\boldsymbol{I}}
+\newcommand{\xx}{\boldsymbol{x}}
+\newcommand{\bolda}{\boldsymbol{a}}
+\newcommand{\boldb}{\boldsymbol{b}}
+\newcommand{\bzero}{{\boldsymbol{0}}}
+\def\bn{\boldsymbol n}
+\def\bN{\boldsymbol N}
+\def\J{\boldsymbol J}
+\newcommand{\NN}{\mathcal{N}}
+% my limits
+\renewcommand{\to}{\rightarrow}
+\newcommand{\To}{\longrightarrow}
+% my operators
+\renewcommand{\div}{\operatorname{div}}
+\newcommand{\curl}{\operatorname{curl}}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\range}{\operatorname{Range}}
+\newcommand{\spn}{\operatorname{Span}}
+\newcommand{\dist}{\operatorname{dist}}
+\newcommand{\grad}{\boldsymbol{\nabla}}
+\newcommand{\pd}[2]{\frac{\partial#1}{\partial#2}}
+\newcommand{\deriv}[2]{\frac{d#1}{d#2}}
+\newcommand{\pdd}[2]{\frac{\partial^2#1}{\partial#2^2}}
+\newcommand{\pds}[1]{\partial_{#1}}
+\newcommand{\pdds}[2]{\partial^2_{#1#2}}% my integrals
+\newcommand{\intd}{\int_\D}
+%\renewcommand{\liminf}[1]{\underset{#1}{\operatorname{liminf}}}
+% my spaces
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\RS}{\mathbb{R}^{d \times d}_S}
+\newcommand{\RSPD}{\mathbb{R}^{d \times d}_{SPD}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\QQ}{\mathbb{Q}}
+% \def\U{\mathrm{W}}  % !! \V does not always compile !!
+% \def\Uz{\mathrm{V}}
+\def\U{\mathrm{U}}
+\def\V{\mathcal{V}}
+\def\V{\mathrm{V}}
+\def\H{\mathrm{H}}
+\def\W{\mathrm{W}}
+\def\Q{\mathrm{Q}}
+\def\S{\mathrm{S}}
+\def\SPD{\S_{PD}}
+\def\Uh{\mathrm{W}_h}
+\def\Uhz{\mathrm{V}_h}
+\def\Vhzero{\mathrm{V}_{h}^0}
+\def\Vhone{\mathrm{V}_{h}^1}
+\def\Qh{\mathrm{Q}_h}
+\def\Sh{\mathrm{S}_h}
+\def\Shzero{\mathrm{S}_h^0}
+\def\Shone{\mathrm{S}_h^1}
+\def\ShonePD{\mathrm{S}_{h,PD}^1}
+% my norms
+\newcommand{\NormW}[3]{\|#1\|_{#2,#3}}
+\newcommand{\NormH}[2]{\|#1\|_{#2}}
+\newcommand{\NormLinf}[1]{\|#1\|_{L^\infty}}
+\newcommand{\NormLone}[1]{\|#1\|_{L^1}}
+\newcommand{\NormLtwo}[1]{\|#1\|_{L^2}}
+\newcommand{\NormC}[1]{\|#1\|_{C^0}}
+\newcommand{\NormHolder}[3]{\|#1\|_{C^{#2,#3}}}
+\newcommand{\SemiNormHolder}[2]{|#1|_{C^{#2}}}
+% my fluid variables
+\newcommand{\str}{{\boldsymbol{\tau}}}
+\newcommand{\strs}{{\boldsymbol{\sigma}}}
+\newcommand{\bu}{{\boldsymbol{u}}}
+\newcommand{\bv}{\boldsymbol{v}}
+\newcommand{\bw}{\boldsymbol{w}}
+\newcommand{\bz}{\boldsymbol{z}}
+\newcommand{\be}{\boldsymbol{e}}
+\newcommand{\bg}{\boldsymbol{g}}
+\newcommand{\vort}{{\boldsymbol{\omega}}}
+\newcommand{\gbu}{{\grad\bu}}
+\newcommand{\gbv}{{\grad\bv}}
+% \newcommand{\Dbu}{{\frac12(\gbu+\gbu^T)}}
+% \newcommand{\Dbv}{{\frac12(\gbv+\gbv^T)}}
+\def\Dbu{\boldsymbol{D}(\bu)}
+\def\Dbv{\boldsymbol{D}(\bv)}
+\newcommand{\bphi}{\boldsymbol{\phi}}
+\newcommand{\bpsi}{\boldsymbol{\psi}}
+\newcommand{\bchi}{\boldsymbol{\chi}}
+\newcommand{\bLambda}{\boldsymbol{\Lambda}}
+\newcommand{\bXi}{\boldsymbol{\Xi}}
+\newcommand{\bxi}{\boldsymbol{\xi}}
+\newcommand{\bvarsigma}{\boldsymbol{\varsigma}}
+% my space-discretised variables
+\newcommand{\buh}{\bu_h}
+\newcommand{\bvh}{\bv_h}
+\def\Dbuh{\boldsymbol{D}(\buh)}
+\def\Dbvh{\boldsymbol{D}(\bvh)}
+\newcommand{\ph}{p_h}
+\newcommand{\qh}{q_h}
+\newcommand{\gbuh}{\grad\bu_h}
+\newcommand{\strh}{\strs_h}
+% my regularized variables
+\newcommand{\prd}{p_{\delta}}
+\newcommand{\paL}{p_{\alpha}^L}
+\newcommand{\padL}{p_{\alpha,\delta}^L}
+\newcommand{\paorL}{p_{\alpha}^{(L)}}
+\newcommand{\padorL}{p_{\alpha,\delta}^{(L)}}
+\newcommand{\bud}{\bu_\delta}
+\newcommand{\gbud}{\grad\bu_\delta}
+\newcommand{\strd}{\strs_\delta}
+\newcommand{\bua}{\bu_\alpha}
+\newcommand{\gbua}{\grad\bu_\alpha}
+\newcommand{\stra}{\strs_\alpha}
+\newcommand{\budL}{\bu_{\delta,L}}
+\newcommand{\buaL}{\bu_{\alpha}^{L}}
+\newcommand{\buadL}{\bu_{\alpha,\delta}^{L}}
+\newcommand{\buaorL}{\bu_{\alpha}^{(L)}}
+\newcommand{\buadorL}{\bu_{\alpha,\delta}^{(L)}}
+\newcommand{\gbudL}{\grad\bu_{\delta,L}}
+\newcommand{\gbuaL}{\grad\bu_{\alpha}^{L}}
+\newcommand{\gbuadL}{\grad\bu_{\alpha,\delta}^{L}}
+\newcommand{\gbuaorL}{\grad\bu_{\alpha}^{(L)}}
+\newcommand{\gbuadorL}{\grad\bu_{\alpha,\delta}^{(L)}}
+\newcommand{\strdL}{\strs_{\delta,L}}
+\newcommand{\straL}{\strs_{\alpha}^{L}}
+\newcommand{\stradL}{\strs_{\alpha,\delta}^{L}}
+\newcommand{\straorL}{\strs_{\alpha}^{(L)}}
+\newcommand{\stradorL}{\strs_{\alpha,\delta}^{(L)}}
+% my space-discretised regularized variables
+\newcommand{\buhd}{\bu_{\delta,h}}
+\newcommand{\gbuhd}{\grad\bu_{\delta,h}}
+\newcommand{\strhd}{\strs_{\delta,h}}
+\newcommand{\buhdL}{\bu_{\delta,L,h}}
+\newcommand{\gbuhdL}{\grad\bu_{\delta,L,h}}
+\newcommand{\stradh}{\strs_{\alpha,\delta,h}}
+% my space-discretised regularized extra-diffusive variables
+\newcommand{\buhda}{\bu_{\alpha,\delta,h}}
+\newcommand{\gbuhda}{\grad\bu_{\alpha,\delta,h}}
+\newcommand{\strhda}{\strs_{\alpha,\delta,h}}
+\newcommand{\buhdLa}{\bu_{\alpha,\delta,h}}
+\newcommand{\gbuhdLa}{\grad\bu_{\alpha,\delta,h}}
+\newcommand{\strhdLa}{\strs_{\alpha,\delta,h}}
+\newcommand{\buhLa}{\bu_{\alpha,h}}
+\newcommand{\gbuhLa}{\grad\bu_{\alpha,h}}
+\newcommand{\strhLa}{\strs_{\alpha,h}}
+% my time-discretised variables
+\newcommand{\strn}{\strs^n}
+\newcommand{\strnp}{\strs^{n+1}}
+\newcommand{\bun}{\bu^n}
+\newcommand{\bunp}{\bu^{n+1}}
+\newcommand{\pn}{p^n}
+\newcommand{\qn}{q^n}
+\newcommand{\Ln}{\Lambda^n}
+\newcommand{\Lnp}{\Lambda^{n+1}}
+% my space-and-time-discretised variables
+\newcommand{\buhn}{\bu_h^n}
+\newcommand{\buhnp}{\bu_h^{n+1}}
+\newcommand{\buhnm}{\bu_h^{n-1}}
+\def\Dbuhnm{\boldsymbol{D}(\buhnm)}
+\def\Dbuhn{\boldsymbol{D}(\buhn)}
+\def\Dbuhnp{\boldsymbol{D}(\buhnp)}
+\newcommand{\strhnp}{\strs_h^{n+1}}
+\newcommand{\strhnpp}{\strs_h^{n+1,+}}
+\newcommand{\strhnpm}{\strs_h^{n+1,-}}
+\newcommand{\strhn}{\strs_h^n}
+\newcommand{\phn}{p_h^n}
+\newcommand{\phnp}{p_h^{n+1}}
+\newcommand{\gbuhnp}{\gbu_h^{n+1}}
+\newcommand{\gbuhn}{\gbu_h^n}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\usepackage{verbatim}
+%%
+%% Pour activer les commentaires
+%%
+%%
+\newcommand{\comment}[1]{ { ***~{\bf #1}~***}}
+%%
+%% Pour desactiver les commentaires
+%%
+% \newcommand{\comment}[1]{ }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%--------------------------------------------------------
+% \journalname{myjournal} % SPRINGER Insert the name of "your journal"
+
+\begin{document}
+
+\title{ALE method for gravity waves}
+
+%\thanks{Grants or other notes
+%about the article that should go on the front page should be
+%placed here. General acknowledgments should be placed at the end of the article.} % SPRINGER
+%\subtitle{..} % SPRINGER
+%\titlerunning{Reduced-Basis : Uncertain coefficients in elliptic PDEs}% SPRINGER
+
+\author{SB
+%S\'ebastien Boyaval
+% \footnote{
+% Laboratoire d'hydraulique Saint-Venant,\\ Universit\'e Paris-Est
+% (Ecole des Ponts ParisTech) EDF R\&D,\\ 6 quai Watier, 78401 Chatou Cedex, France
+% \\[2mm]       
+% sebastien.boyaval@enpc.fr
+% \\[2mm]
+% Present address: EPFL
+%}
+}
+%\authorrunning{Short form of author list} % SPRINGER if too long for running head
+
+% \begin{history}
+% \received{}
+% \revised{}
+% \end{history}
+%\date{Received: date / Accepted: date} % SPRINGER
+%\date{\today}
+
+\maketitle
+
+\begin{abstract}
+We investigate the capabilities of the ALE method for the numerical simulation of gravity waves.
+% \PACS{PACS code1 \and PACS code2 \and more}
+% \subclass{MSC code1 \and MSC code2 \and more}
+% \keywords{Finite element method, convergence analysis, existence of weak solutions.}%
+\end{abstract}
+
+%\subjclass{} %
+
+% \keywords{Finite element method, convergence analysis, existence of weak solutions.}%
+% \ccode{AMS Subject Classification: 35Q30, 65M12, 65M60, 76A10, 76M10, 82D60}
+
+%\tableofcontents
+
+%\begin{acknowledgements}
+%If you'd like to thank anyone, place your comments here
+%and remove the percent signs.
+%\end{acknowledgements}
+
+\section{A 2D Finite-Element scheme for free-surface Stokes flows}
+
+\subsection{IBVP}
+
+$$
+\D(t) = \{ z\in(b(x),\eta(t,x)) \ x \in (0,1) \} \,.
+$$
+% \begin{equation}
+% \label{eq:NS}
+%  (\partial_t+\bu\cdot\grad)\bu + \grad p - \div(2\eta\Dbu) = \f \quad \div\bu = 0 \,,
+% \end{equation}
+\begin{equation}
+\label{eq:Stokes}
+ \partial_t \bu+ \grad p - \div(2\eta\Dbu) = \f \quad \div\bu = 0 \,,
+\end{equation}
+% Pour repr\'esenter des ph\'enom\`enes hydrodynamiques sur un domaine de taille maximale $L[m]$ o\`u la vitesse est d'ordre $U[ms^{-1}]$, on prendra
+% $\eta\approx 10^{-6}U/L^2$, la viscosit\'e cin\'ematique de l'eau \'etant suppos\'ee constante ici, de l'ordre de $10^{-6}m^2s^{-1}$ comme dans l'oc\'ean.
+%   En multipliant toutes les dimensions d'espace par L, de temps par T et toutes les composantes de la solution par U=L/T, il suffit en effet de connaitre les solutions de
+%   $$ \partial_t\bu + \grad p - \div(2\eta\Dbu) = 0 \quad \div\bu = 0 $$
+%   dans tous les domaines bornés de taille 1 dans la direction bornée, pour toutes les conditions initiales de norme 1 et tous les nombres de Reynolds \eta
+%   pour reconstruire ensuite toutes les solutions: il suffit de dilater correctement le temps et de conserver la similitude de Reynolds
+\begin{equation}
+\label{eq:impermeabilite}
+ u|_{z=b(x,y)}\partial_x b %+ v|_{z=b(x,y)}\partial_y \eta
+ - w|_{z=b(x,y)} = 0 \,,
+\end{equation}
+\begin{equation}
+\label{eq:conditioncinematique}
+ \partial_t\eta + u|_{z=\eta(t,x,y)}\partial_x \eta %+ v|_{z=\eta(t,x,y)}\partial_y \eta
+ - w|_{z=\eta(t,x,y)} = 0 \,.
+\end{equation}
+
+$\bu=\grad\phi$ ($\grad\times\bu=0$) % Laplace-Bernoulli
+\begin{equation}
+ \label{eq:laplacebernoulli}
+ \div \phi = 0 \quad \partial_t \phi + \frac{|\grad \phi|^2}2 + p - \f\cdot\xx = 0
+\end{equation}
+(\'eventuellement des conditions aux parois lat\'erales du domaine) et une condition initiale pour $(\phi,\eta)$, le syst\`eme dit ``des vagues''
+\begin{equation}
+ \label{eq:waterwave}
+ \div \phi = 0 \quad \partial_t \phi|_{z=\eta(t,x,y)} + \frac{|\grad \phi|^2|_{z=\eta(t,x,y)}}2 + p_0 - \f\cdot\xx|_{z=\eta(t,x,y)} = 0
+\end{equation}
+
+\begin{equation}
+\label{eq:vorticite}
+ (\partial_t+\bu\cdot\grad)\omega - \omega\cdot\grad\bu = \nu \Delta \omega\,,
+\end{equation}
+
+\subsection{Scheme}
+
+$([\mathbb{P}^k]^d,\mathbb{P}^{k-1})$
+
+$$
+\int_{\Omega} \left( \partial_t\bu\cdot\bv %+ [(\bu\cdot\grad)\bu]\cdot\bv 
+- p \div\bv + q \div\bu + 2\eta\Dbu:\Dbv - \f\cdot\bv \right)
+= 0  \quad  \forall (\bv,q)\in([\mathbb{P}^k]^d,\mathbb{P}^{k-1})
+$$
+
+$$
+\frac{d}{dt} \int_{\Omega} \bu\cdot\bv + \int_{\Omega} \left( [(-\bw\cdot\grad)\bu]\cdot\bv % \bu
+- \frac12(\div\bw)\bu\cdot\bv - p \div\bv + q \div\bu + 2\eta\Dbu:\Dbv - \f\cdot\bv \right)
+= 0  \,. %\quad  \forall (\bv,q)\in([\mathbb{P}^k]^d,\mathbb{P}^{k-1})
+$$
+
+\begin{multline}
+ \int_{\Omega^{n+1}} \bu^{n+1}\cdot\bv  - \int_{\Omega^{n}} \bu^{n}\cdot\bv  
++ \dt \int_{\Omega^{n+1}} \left( [(-\bw^{n}\circ(\I+\dt\bw^n)\cdot\grad)\bu^{n+1}]\cdot\bv %\bu^{n}
+- \frac12(\div\bw^n)\bu^{n+1}\cdot\bv \right)
+\\
++ \dt \int_{\Omega^{n+1}} \left( - p^{n+1} \div\bv + q \div\bu^{n+1} + 2\eta\Dbu^{n+1}:\Dbv - \f\cdot\bv \right) = 0 \quad \forall (\bv,q)\in([\mathbb{P}^k]^d,\mathbb{P}^{k-1})
+\end{multline}
+$\Omega^{n}\to\Omega^{n+1}:\xx\to\xx+\dt\bw^n(\xx)$
+
+\begin{multline}
+ \int_{\Omega^{n+1}} \left( \bu^{n+1}\cdot\bv - [\bu^{n}\circ(\I+\dt\bw^n)]\cdot\bv + \dt [((\bu^{n}-\bw^{n})\circ(\I+\dt\bw^n)\cdot\grad)\bu^{n+1}]\cdot\bv \right)
+\\
++ \dt \int_{\Omega^{n+1}} \left( - p^{n+1} \div\bv + q \div\bu^{n+1} + 2\eta\Dbu^{n+1}:\Dbv - \f\cdot\bv \right) = 0 \quad \forall (\bv,q)\in([\mathbb{P}^k]^d,\mathbb{P}^{k-1})
+\end{multline}
+
+%\bibliographystyle{ws-m3as}
+\bibliographystyle{amsplain}
+%\bibliographystyle{plain}
+%\bibliographystyle{plain}
+%\bibliographystyle{spbasic}      % basic style, author-year citations
+%\bibliographystyle{spmpsci}      % mathematics and physical sciences
+%\bibliographystyle{spphys}       % APS-like style for physics
+%\bibliography{/home/sebastien/Bureau/Z_boyaval/database/myrefs} % portable
+\bibliography{/local00/home/SB03743S/Desktop/Z/database/myrefs} % EDF
+
+\end{document}

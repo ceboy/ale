@@ -1,0 +1,12 @@
+############ Gnuplot
+
+
+set autoscale
+
+plot 'convergence_EI_P1b_0.001H1.gp' u (log($1)):(log($2)) w line
+
+replot 'convergence_EI_P2_0.001H1.gp' u (log($1)):(log($2)) w line
+
+replot x+0.4 w line
+
+replot 2*x-0.5 w line

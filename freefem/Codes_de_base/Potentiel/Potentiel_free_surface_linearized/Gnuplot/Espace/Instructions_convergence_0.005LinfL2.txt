@@ -1,0 +1,32 @@
+############ Gnuplot
+
+set title 'Erreur LinfL2 en espace pour EI'
+set xlabel 'log(h)'
+set ylabel 'log(erreur)'
+set autoscale
+
+#plot 'convergence_EI_P1b_0.005_LinfL2.gp' u (log($1)):(log($2)) w line t 'P1b'
+
+plot 'convergence_P2_0.005_LinfL2.gp' u (log($1)/log(10)):(log($2)/log(10))  t 'P2'
+
+replot 'convergence_m_P2_0.004_LinfL2.gp' u (log($1)/log(10)):(log($2)/log(10))  t 'P2m'
+
+replot 'convergence_m1_P2_0.004_LinfL2.gp' u (log($1)/log(10)):(log($2)/log(10))  t 'P2m1'
+
+replot 'convergence_m2_P2_0.004_LinfL2.gp' u (log($1)/log(10)):(log($2)/log(10))  t 'P2m2'
+
+replot 'convergence_m3_P2_0.004_LinfL2.gp' u (log($1)/log(10)):(log($2)/log(10))  t 'P2m3'
+
+replot 'convergence_m4_P2_0.004_LinfL2.gp' u (log($1)/log(10)):(log($2)/log(10))  t 'P2m4'
+
+replot 'convergence_m5_P2_0.004_LinfL2.gp' u (log($1)/log(10)):(log($2)/log(10))  t 'P2m5'
+
+replot 'convergence_m6_P2_0.004_LinfL2.gp' u (log($1)/log(10)):(log($2)/log(10))  t 'P2m6'
+
+replot 2*x+2 w line t 'ordre 2'
+
+
+set term postscript enhanced color
+set output "convergence_EI_0.005_LinfL2.eps"
+replot
+unset output

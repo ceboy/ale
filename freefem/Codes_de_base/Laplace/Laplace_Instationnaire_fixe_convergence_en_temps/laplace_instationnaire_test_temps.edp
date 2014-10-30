@@ -1,0 +1,417 @@
+// Stokes
+
+
+///////////////////////////////////////////////////////////////////////////////////    Données
+verbosity = 1;
+
+real eps1 = 1.e-10;
+real mytgv = 1.e30;
+
+
+///////////////////////////////////////////////////////////////////////////////////    Pas de temps
+real pas;
+real T;
+int mypas;
+while(mypas!=2 & mypas!=3 & mypas!=4 & mypas!=5){
+	cout<<"Choix du pas de temps : 2 grossier, 3 moyen, 4 fin"<<endl;
+	cin>> mypas;
+}
+
+if (mypas==2){
+	pas=0.1;
+	T=20;
+}
+if (mypas==3){
+	pas=0.05;
+	T=40.;
+}
+if (mypas==4){
+	pas=0.01;
+	T=200.;
+}
+
+if (mypas==5){
+	pas=0.005;
+	T=400.;
+}
+
+/////////////////////////////////////////////////////////////////////////////////// données
+real t=0;
+
+
+
+func f1 = 1.;//2.*pi^2*sin(pi*x)*sin(pi*y);//*cos(NbrPeriode*t*pi/(pas*T))
+//func f2 = -sin(pi*x)*sin(pi*y)*NbrPeriode*pi/(pas*T);//*sin(NbrPeriode*t*pi/(pas*T))
+
+func uana = sin(pi*x)*sin(pi*y)*cos(pi*t);
+
+
+///////////////////////////////////////////////////////////////////////////////////    Maillage
+int finesse;
+string maillage;
+mesh Th;
+
+/*while(finesse!=2 & finesse!=3 & finesse!=4 & finesse!=5){*/
+/*	cout<<"Choix du maillage : 2 grossier, 3 moyen, 4 fin, 5 ref"<<endl;*/
+/*	cin>> finesse;*/
+/*}*/
+
+finesse=2;
+if (finesse==2){
+	maillage="grossier";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carregrossier.msh"); 
+}
+if (finesse==3){
+	maillage="moyen";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carremoyen.msh"); 
+}
+if (finesse==4){
+	maillage="fin";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carrefin.msh"); 
+}
+if (finesse==5){
+	maillage="ref";
+	cout<<maillage<<endl<<endl;
+
+	Th=readmesh("Carreref.msh"); 
+}
+
+///////////////////////////////////////////////////////////////////////////////////    Formule variatonnelle
+varf mass(u,v) = int2d(Th)(u*v);
+
+varf rigidity(u,v) = int2d(Th)(dx(u)*dx(v)+dy(u)*dy(v));
+
+varf boundary(u,v) = on(1,2,3,4,u=1);
+
+varf boundaryentree(u,v) = on(4,u=1);
+
+varf boundarysortie(u,v) = on(1,u=1);
+
+varf boundaryautres(u,v) = on(2,3,u=1);
+
+varf SecMem1(u,v) = int2d(Th)(f1*v);
+
+//varf SecMem2(u,v) = int2d(Th)(f1*v);
+
+
+///////////////////////////////////////////////////////////////////////////////////    Discrétisation en espace
+
+/// Espaces de discrétisation
+string discr="P2";
+fespace Uh(Th,P2); Uh u;
+
+/// Construction du problème linéaire
+
+matrix MASS = mass(Uh,Uh,tgv=mytgv);
+
+matrix RIGIDITY = rigidity(Uh,Uh,tgv=mytgv);
+
+matrix BOUNDARYPENALIZATION = boundary(Uh,Uh,tgv=mytgv); 
+
+///////////////////////////////////////////////////////////////////////////////////    Discrétisation en espace
+
+
+// stockage des résultats
+real[int,int] utab(Uh.ndof,T);
+
+// Initialisation
+
+u=1.;
+cout<<"t : "<<t<<endl;
+
+utab(0:Uh.ndof-1,0)=u[];
+//plot(u,wait=1,fill=1,value=1);
+// Choix schema
+string schema;
+int type;
+while (type!=1 & type!=2 & type!=3){
+	cout<<"Choix du schema : Euler Implicite 1 ou Crank Nicolson 2 ou BDF2 3"<<endl;
+	cin>>type;
+}
+// Application du schema
+
+if (type ==1){
+	// Schéma d'Euler implicite
+	schema="EI";
+
+	
+	
+	for (int iter=1;iter<T;iter++){
+
+
+		// Mise à jour
+		t+=pas;
+		cout<<"iteration : "<<iter<<" t : "<<t<<endl;
+		/// Construction du second membre
+
+		real[int] F(Uh.ndof);
+		Uh sec1,sec2;
+		sec1[] = SecMem1(0,Uh,tgv=mytgv);
+		sec1[] *=-pi*sin(t*pi);//cos(NbrPeriode*t*pi/(pas*T));
+		//sec2[] = SecMem2(0,Uh,tgv=mytgv);
+		//sec2[] *= sin(NbrPeriode*t*pi/(pas*T));
+		F=sec1[];//+sec2[];
+		Uh Ftest;
+		Ftest[]=f1;
+
+		// Construction du problème linéaire au pas de temps considéré
+		real[int] Uav(Uh.ndof);
+		Uav=utab(0:Uh.ndof-1,iter-1);
+		matrix A=(MASS+pas*RIGIDITY);
+		real[int] intermediaire1(Uh.ndof);
+		intermediaire1=MASS*Uav;
+		real[int] B(Uh.ndof);
+		B=intermediaire1+pas*F;
+
+
+		// Prise en compte des conditions aux bords dans la matrice à inverser
+		
+		matrix Ap=A+BOUNDARYPENALIZATION;
+
+		//Construction de l'autre matrice avec penalisation
+
+		real[int] BC(Uh.ndof);
+
+		BC=mytgv*u[];
+		
+		BC*=cos(pi*t);
+
+
+		real[int] BOUNDARY = boundary(0,Uh);
+		
+		
+		B(0:Uh.ndof-1) = BOUNDARY ? BC : B(0:Uh.ndof-1);
+		
+
+
+		// Résolution du problème linéaire
+		
+		real[int] U(Uh.ndof);
+		set(Ap,eps=eps1,solver=UMFPACK);
+		U=(Ap^(-1))*B;
+
+		// Stockage des résultats
+		utab(0:Uh.ndof-1,iter)=U(0:Uh.ndof-1);
+		
+		
+		// Les conditions aux limites sont respectées
+		//cout << "cos : "<<cos(t*pi) <<" max : "<<test4.max<<" min : "<<test4.min << endl;
+
+	}
+}
+
+if (type==2){
+	// Schéma de Crank Nicolson
+	schema="CN";
+	real theta=0.5;
+	for (int iter=1;iter<T;iter++){
+		// Mise à jour
+		cout<<"iteration : "<<iter<<" t : "<<t<<endl;
+		t+=pas;
+		
+		/// Construction du second membre
+
+		real[int] F(Uh.ndof),Fav(Uh.ndof);
+		Uh sec1,secav1;
+		sec1[] = SecMem1(0,Uh,tgv=mytgv);
+		sec1[] *=-pi*sin(t*pi);
+		F=sec1[];
+
+		secav1[] = SecMem1(0,Uh,tgv=mytgv);
+		secav1[] *=-pi*sin((t-pas)*pi);
+		Fav=secav1[];
+		
+		
+		// Construction du problème linéaire au pas de temps considéré
+		real[int] Uav(Uh.ndof);
+		Uav=utab(0:Uh.ndof-1,iter-1);
+		matrix A=(MASS+(pas*theta)*RIGIDITY);
+		matrix intermediaire1=MASS+(-pas*(1-theta))*RIGIDITY;
+		real[int] intermediaire2=intermediaire1*Uav;
+		real[int] B=intermediaire2+theta*pas*F;
+		B=B+(1-theta)*pas*Fav;
+	
+		// Prise en compte des conditions aux bords dans la matrice à inverser
+	
+		matrix Ap=A+BOUNDARYPENALIZATION;
+	
+		// Construction de l'autre matrice avec penalisation
+
+		real[int] BC(Uh.ndof);
+
+		BC=mytgv*u[];
+		BC*=cos(pi*t);
+
+		real[int] BOUNDARY = boundary(0,Uh);
+
+
+		B(0:Uh.ndof-1) = BOUNDARY ? BC : B(0:Uh.ndof-1);
+
+
+		// Résolution du problème linéaire
+	
+		real[int] U(Uh.ndof);
+		set(Ap,eps=eps1,solver=UMFPACK);
+		U=Ap^-1*B;
+	
+		// Stockage des résultats
+		utab(0:Uh.ndof-1,iter)=U(0:Uh.ndof-1);
+		Uh utest;
+		utest[]=utab(0:Uh.ndof-1,iter);
+		//plot(utest,fill=1,value=1,wait=1,boundary=0);
+
+	}
+}
+
+
+if (type==3){
+	////////////// Schéma BDF2
+	schema="BDF2";
+	
+	t+=pas;
+	////////////// Initialisation avec un pas d'Euler implicite
+	
+	
+	/// Construction du second membre
+
+	real[int] F(Uh.ndof);
+	Uh sec1,sec2;
+	sec1[] = SecMem1(0,Uh,tgv=mytgv);
+	sec1[] *=-pi*sin(t*pi);
+	F=sec1[];
+		
+	// Construction du problème linéaire au pas de temps considéré
+	real[int] Uav(Uh.ndof);
+	Uav=utab(0:Uh.ndof-1,0);
+	matrix A=(MASS+pas*RIGIDITY);
+	real[int] intermediaire1(Uh.ndof);
+	intermediaire1=MASS*Uav;
+	real[int] B(Uh.ndof);
+	B=intermediaire1+pas*F;
+	
+	// Prise en compte des conditions aux bords dans la matrice à inverser
+	
+	matrix Ap=A+BOUNDARYPENALIZATION;
+	
+	// Construction de l'autre matrice avec penalisation
+
+	real[int] BC(Uh.ndof);
+
+	BC=mytgv*u[];
+	BC*=cos(pi*t);
+
+	real[int] BOUNDARY = boundary(0,Uh);
+	
+
+	B(0:Uh.ndof-1) = BOUNDARY ? BC : B(0:Uh.ndof-1);
+
+	// Résolution du problème linéaire
+	
+	real[int] U(Uh.ndof);
+	set(Ap,eps=eps1,solver=UMFPACK);
+	U=Ap^-1*B;
+	//Uh v;
+	//v=cos(pi*pas);
+	//utab(0:Uh.ndof-1,1)=v[];
+	utab(0:Uh.ndof-1,1)=U(0:Uh.ndof-1);
+
+	
+	////////////// Boucle en temps
+	
+	for (int iter=2;iter<T;iter++){
+		// Mise à jour
+		cout<<"iteration : "<<iter<<" t : "<<t<<endl;
+		t+=pas;
+		
+		/// Construction du second membre
+
+		real[int] F(Uh.ndof);
+		Uh sec1,sec2;
+		sec1[] = SecMem1(0,Uh,tgv=mytgv);
+		sec1[] *=-pi*sin(t*pi);
+		F=sec1[];
+
+		
+		// Construction du problème linéaire au pas de temps considéré
+		real[int] U0(Uh.ndof),U1(Uh.ndof);
+		U0=utab(0:Uh.ndof-1,iter-2);
+		U1=utab(0:Uh.ndof-1,iter-1);
+		matrix A=(MASS+(pas*2./3.)*RIGIDITY);
+		real[int] intermediaire1(Uh.ndof);
+		intermediaire1=MASS*U1;
+		intermediaire1=(4./3.)*intermediaire1;
+		real[int] intermediaire2(Uh.ndof);
+		intermediaire2=MASS*U0;
+		intermediaire2=(-1./3.)*intermediaire2;
+		real[int] intermediaire3(Uh.ndof);
+		intermediaire3=(2./3.)*pas*F;
+		real[int] B=intermediaire1+intermediaire2;
+		B=B+intermediaire3;
+		// Prise en compte des conditions aux bords dans la matrice à inverser
+	
+		matrix Ap=A+BOUNDARYPENALIZATION;
+	
+		// Construction de l'autre matrice avec penalisation
+
+		real[int] BC(Uh.ndof);
+
+		BC=mytgv*u[];
+		BC*=cos(pi*t);
+
+
+		real[int] BOUNDARY = boundary(0,Uh);
+
+	
+		B(0:Uh.ndof-1) = BOUNDARY ? BC : B(0:Uh.ndof-1);
+
+
+		// Résolution du problème linéaire
+	
+		real[int] U2(Uh.ndof);
+		real[int] InvM(Uh.ndof);
+		set(Ap,eps=eps1,solver=UMFPACK);
+		U2=Ap^-1*B;
+
+		// Stockage des résultats
+		utab(0:Uh.ndof-1,iter)=U2(0:Uh.ndof-1);
+		Uh utest;
+		utest[]=utab(0:Uh.ndof-1,iter);
+		//plot(utest,fill=1,value=1,wait=1,boundary=0);		
+		
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////    Visualisation et Sauvegarde des données
+
+// Création des divers dossiers de stockage
+exec("mkdir "+"Vitesses");
+exec("mkdir "+"Vitesses/"+maillage);
+exec("mkdir "+"Vitesses/"+maillage+"/"+schema);
+exec("mkdir "+"Vitesses/"+maillage+"/"+schema+"/"+discr);
+exec("mkdir "+"Vitesses/"+maillage+"/"+schema+"/"+discr+"/"+pas);
+exec("mkdir "+"Vitesses/"+maillage+"/"+schema+"/"+discr+"/"+pas+"/u");
+exec("mkdir "+"Vitesses/"+maillage+"/"+schema+"/"+discr+"/"+pas+"/v");
+exec("mkdir "+"Vitesses/"+maillage+"/"+schema+"/"+discr+"/"+pas+"/p");
+
+
+for (int i=0;i<T;i++){
+	u[]=utab(0:Uh.ndof-1,i);
+	
+	// Visualisation
+	//plot(u,fill=1,wait=1,value=1);
+	
+	// Stockage
+	ofstream U ("Vitesses/"+maillage+"/"+schema+"/"+discr+"/"+pas+"/u/u"+i+".txt");
+
+	U<<u[];
+
+}
+
+
+
+cout<<"Rappel"<<endl<<"Maillage : "<<maillage<<" Schema : "<<schema<<" Pas de temps :"<<pas<<endl<<endl;
+
+

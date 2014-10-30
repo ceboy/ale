@@ -1,0 +1,843 @@
+\documentclass{article}
+%\documentclass{amsart}
+%\documentclass{ws-m3as}
+%\documentclass{m2an}
+% SPRINGER
+%\documentclass{svjour3}                    % onecolumn (standard format)
+%\documentclass[smallextended]{svjour3}     % onecolumn (second format)
+%\documentclass[twocolumn]{svjour3}         % twocolumn
+%------------------------------------------------------------
+% Defining page layout:
+\pagestyle{plain} 
+\setlength{\paperwidth}{210mm}
+\setlength{\paperheight}{297mm} 
+% on compte du bord du papier
+\setlength{\hoffset}{-10mm}
+\setlength{\voffset}{0mm} 
+\setlength{\textwidth}{150mm}
+\setlength{\textheight}{200mm} 
+% marge gauche
+\setlength{\evensidemargin}{0mm}
+%\setlength\oddsidemargin{3cm}
+% entete
+\setlength{\topmargin}{0mm} 
+%\setlength{\headheight}{0mm}
+\setlength{\headsep}{10mm}
+%pied de page
+\setlength{\footskip}{20mm} 
+% notes en marge droite
+\setlength{\marginparsep}{0mm}
+\setlength{\marginparwidth}{0mm} 
+%\setlength\marginparpush{0cm}
+% 
+\parindent=0.5cm
+\linespread{1.2}
+% \textwidth 455pt \oddsidemargin 0pt \evensidemargin 0pt 
+% \headsep 0pt \headheight 0pt \textheight 655pt \parskip 10pt
+% \def\arraystretch{1.15}
+% \renewcommand{\floatpagefraction}{0.75}
+%------------------------------------------------------------
+% Adding packages:
+%\usepackage{url}
+% mathematical symbols
+\usepackage{latexsym}
+\usepackage{amsmath}%
+%\usepackage{amsfonts}%
+\usepackage{amssymb}%
+\usepackage{amsthm}
+%\usepackage{dina4}
+%\usepackage{mathtools} % (over/under)brackets
+\usepackage{bm}
+% graphical tools
+\usepackage{graphicx}
+%\usepackage{psfrag,psfig}
+%\graphicspath{./fig/}
+%\usepackage[pdftex]{graphicx}
+%\usepackage{epsf}
+%\usepackage{epsfig}
+\usepackage[all]{xy}
+\usepackage{hhline}
+%\usepackage{exscale,cmmib57}
+\usepackage{epic} %,eepic}% attention, dashline disparait avec eepic
+%\usepackage{subfigure}
+%\DeclareGraphicsExtensions{.jpg,.png,.pdf}
+%\DeclareGraphicsRule{*}{mps}{*}{}
+%\graphicspath{{fig/}}
+% packages for layout
+%\usepackage{geometry}
+%\usepackage{afterpage}
+%\usepackage{fullpage}
+%\usepackage{fancyhdr}
+% my additional package for fonts featuring
+%\usepackage{mathptmx}      % SPRINGER use Times fonts if available on your TeX system
+\usepackage[english]{babel}
+%\usepackage[francais,english]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage[T1]{fontenc}
+%\usepackage[cyr]{aeguill} % guillemets
+% my additional package for showing the labels
+%\usepackage{showkeys}
+%\usepackage[notref,notcite]{showkeys}
+%\usepackage{showlabels}
+%\usepackage{showtags}
+%\usepackage{drafcopy}
+%\usepackage{float}
+\usepackage{enumerate} % to control the display of the enumeration counter
+%------------------------------------------------------------
+% Counters
+%\newcounter{qn}[section]
+%------------------------------------------------------------
+
+%\smartqed  % SPRINGER flush right qed marks, e.g. at end of proof
+% Theorem like environments
+\newtheorem{theorem}{Theorem}
+\theoremstyle{plain}
+\newtheorem{acknowledgement}{Acknowledgement}
+\newtheorem{algorithm}{Algorithm}
+\newtheorem{axiom}{Axiom}
+%\newtheorem{case}{Case}
+%\newtheorem{claim}{Claim}
+%\newtheorem{conclusion}{Conclusion}
+%\newtheorem{condition}{Condition}
+%\newtheorem{conjecture}{Conjecture}
+\newtheorem{corollary}{Corollary}
+%\newtheorem{criterion}{Criterion}
+\newtheorem{definition}{Definition}
+\newtheorem{example}{Example}
+%\newtheorem{exercise}{Exercise}
+\newtheorem{lemma}{Lemma}
+\newtheorem{notation}{Notation}
+\newtheorem{problem}{Problem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+%\newtheorem{solution}{Solution}
+\newtheorem{summary}{Summary}
+\numberwithin{equation}{section} % counter !!!!!!!
+%\newtheorem{theorem}{Theorem}[section]
+%\newtheorem{lemma}{Lemma}[section]
+%\newtheorem{proposition}{Proposition}[section]
+%\newtheorem{assumption}{Assumption}[section]
+%\newtheorem{corollary}{Corollary}[section]
+%\newtheorem{definition}{Definition}[section]
+%\newtheorem{conjecture}{Conjecture}[section]
+%\newtheorem{problem}{Problem}[section]
+%\newtheorem{remark}{Remark}[section]
+\newcommand\beq{\begin{equation}}
+\newcommand\eeq{\end{equation}}
+\renewcommand{\emph}{\textbf}
+%\renewcommand{\emph}[1]{{\large \slshape #1}}
+%------------------------------------------------------------
+%------------------------------------------------------------
+% Delimiters, norms, inner products...:
+%
+\newcommand{\brk}[1]{\left(#1\right)}          % \brk{.}     => (.)
+\newcommand{\E}[1]{\mathbb{E}\brk{#1}}
+\newcommand{\V}[1]{\mathbb{V}\brk{#1}}
+\def\E{\mathbb{E}}
+\def\V{\mathbb{V}}
+\newcommand{\Brk}[1]{\left[#1\right]}          % \Brk{.}     => [.]
+\newcommand{\BRK}[1]{\left\{#1\right\}}        % \BRK{.}     => {.}
+\newcommand{\Average}[1]{\left<#1\right>}      % \Average{.} => <.>
+\newcommand{\mean}[1]{\overline{#1}}           % \mean{.}
+\newcommand{\Abs}[1]{\left| #1 \right|}        % \Abs{.}     => |.|
+\newcommand{\Scal}[2]{\left(#1,#2\right)}      % \Scal{.}    => (.;.)
+\newcommand{\Norm}[1]{\left\| #1 \right\|}     % \Norm{.}    => ||.||
+\newcommand{\mymat}[1]{\begin{pmatrix} #1 \end{pmatrix}}
+\newcommand{\jump}[1]{[\![#1]\!]}
+%
+%------------------------------------------------------------
+% Special characters and shortcuts:
+%
+% my constants and parameters
+\newcommand{\dd}{\frac{d(d+1)}{2}}
+\newcommand{\dt}{\Delta t}
+\newcommand{\Wi}{{\text{Wi}}}
+\renewcommand{\Re}{{\text{Re}}}
+\newcommand{\Ma}{{\text{Ma}}}
+\newcommand{\Ra}{{\text{Ra}}}
+\newcommand{\Fr}{{\text{Fr}}}
+\renewcommand{\Pr}{{\text{Pr}}}
+\newcommand{\Gr}{{\text{Gr}}}
+\newcommand{\e}{\varepsilon}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\DD}{\mathrm{D}}
+\newcommand{\f}{\boldsymbol{f}}
+\newcommand{\I}{\boldsymbol{I}}
+\newcommand{\xx}{\boldsymbol{x}}
+\newcommand{\bolda}{\boldsymbol{a}}
+\newcommand{\boldb}{\boldsymbol{b}}
+\newcommand{\bzero}{{\boldsymbol{0}}}
+\def\bn{\boldsymbol n}
+\def\bN{\boldsymbol N}
+\def\J{\boldsymbol J}
+\newcommand{\NN}{\mathcal{N}}
+% my limits
+\renewcommand{\to}{\rightarrow}
+\newcommand{\To}{\longrightarrow}
+% my operators
+\renewcommand{\div}{\operatorname{div}}
+\newcommand{\curl}{\operatorname{curl}}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\range}{\operatorname{Range}}
+\newcommand{\spn}{\operatorname{Span}}
+\newcommand{\dist}{\operatorname{dist}}
+\newcommand{\grad}{\boldsymbol{\nabla}}
+\newcommand{\pd}[2]{\frac{\partial#1}{\partial#2}}
+\newcommand{\deriv}[2]{\frac{d#1}{d#2}}
+\newcommand{\pdd}[2]{\frac{\partial^2#1}{\partial#2^2}}
+\newcommand{\pds}[1]{\partial_{#1}}
+\newcommand{\pdds}[2]{\partial^2_{#1#2}}% my integrals
+\newcommand{\intd}{\int_\D}
+%\renewcommand{\liminf}[1]{\underset{#1}{\operatorname{liminf}}}
+% my spaces
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\RS}{\mathbb{R}^{d \times d}_S}
+\newcommand{\RSPD}{\mathbb{R}^{d \times d}_{SPD}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\QQ}{\mathbb{Q}}
+% \def\U{\mathrm{W}}  % !! \V does not always compile !!
+% \def\Uz{\mathrm{V}}
+\def\U{\mathrm{U}}
+\def\V{\mathcal{V}}
+\def\V{\mathrm{V}}
+\def\H{\mathrm{H}}
+\def\W{\mathrm{W}}
+\def\Q{\mathrm{Q}}
+\def\S{\mathrm{S}}
+\def\SPD{\S_{PD}}
+\def\Uh{\mathrm{W}_h}
+\def\Uhz{\mathrm{V}_h}
+\def\Vhzero{\mathrm{V}_{h}^0}
+\def\Vhone{\mathrm{V}_{h}^1}
+\def\Qh{\mathrm{Q}_h}
+\def\Sh{\mathrm{S}_h}
+\def\Shzero{\mathrm{S}_h^0}
+\def\Shone{\mathrm{S}_h^1}
+\def\ShonePD{\mathrm{S}_{h,PD}^1}
+% my norms
+\newcommand{\NormW}[3]{\|#1\|_{#2,#3}}
+\newcommand{\NormH}[2]{\|#1\|_{#2}}
+\newcommand{\NormLinf}[1]{\|#1\|_{L^\infty}}
+\newcommand{\NormLone}[1]{\|#1\|_{L^1}}
+\newcommand{\NormLtwo}[1]{\|#1\|_{L^2}}
+\newcommand{\NormC}[1]{\|#1\|_{C^0}}
+\newcommand{\NormHolder}[3]{\|#1\|_{C^{#2,#3}}}
+\newcommand{\SemiNormHolder}[2]{|#1|_{C^{#2}}}
+% my fluid variables
+\newcommand{\str}{{\boldsymbol{\tau}}}
+\newcommand{\strs}{{\boldsymbol{\sigma}}}
+\newcommand{\bu}{{\boldsymbol{u}}}
+\newcommand{\bv}{\boldsymbol{v}}
+\newcommand{\bw}{\boldsymbol{w}}
+\newcommand{\bz}{\boldsymbol{z}}
+\newcommand{\be}{\boldsymbol{e}}
+\newcommand{\bg}{\boldsymbol{g}}
+\newcommand{\vort}{{\boldsymbol{\omega}}}
+\newcommand{\gbu}{{\grad\bu}}
+\newcommand{\gbv}{{\grad\bv}}
+% \newcommand{\Dbu}{{\frac12(\gbu+\gbu^T)}}
+% \newcommand{\Dbv}{{\frac12(\gbv+\gbv^T)}}
+\def\Dbu{\boldsymbol{D}(\bu)}
+\def\Dbv{\boldsymbol{D}(\bv)}
+\newcommand{\bphi}{\boldsymbol{\phi}}
+\newcommand{\bpsi}{\boldsymbol{\psi}}
+\newcommand{\bchi}{\boldsymbol{\chi}}
+\newcommand{\bLambda}{\boldsymbol{\Lambda}}
+\newcommand{\bXi}{\boldsymbol{\Xi}}
+\newcommand{\bxi}{\boldsymbol{\xi}}
+\newcommand{\bvarsigma}{\boldsymbol{\varsigma}}
+% my space-discretised variables
+\newcommand{\buh}{\bu_h}
+\newcommand{\bvh}{\bv_h}
+\def\Dbuh{\boldsymbol{D}(\buh)}
+\def\Dbvh{\boldsymbol{D}(\bvh)}
+\newcommand{\ph}{p_h}
+\newcommand{\qh}{q_h}
+\newcommand{\gbuh}{\grad\bu_h}
+\newcommand{\strh}{\strs_h}
+% my regularized variables
+\newcommand{\prd}{p_{\delta}}
+\newcommand{\paL}{p_{\alpha}^L}
+\newcommand{\padL}{p_{\alpha,\delta}^L}
+\newcommand{\paorL}{p_{\alpha}^{(L)}}
+\newcommand{\padorL}{p_{\alpha,\delta}^{(L)}}
+\newcommand{\bud}{\bu_\delta}
+\newcommand{\gbud}{\grad\bu_\delta}
+\newcommand{\strd}{\strs_\delta}
+\newcommand{\bua}{\bu_\alpha}
+\newcommand{\gbua}{\grad\bu_\alpha}
+\newcommand{\stra}{\strs_\alpha}
+\newcommand{\budL}{\bu_{\delta,L}}
+\newcommand{\buaL}{\bu_{\alpha}^{L}}
+\newcommand{\buadL}{\bu_{\alpha,\delta}^{L}}
+\newcommand{\buaorL}{\bu_{\alpha}^{(L)}}
+\newcommand{\buadorL}{\bu_{\alpha,\delta}^{(L)}}
+\newcommand{\gbudL}{\grad\bu_{\delta,L}}
+\newcommand{\gbuaL}{\grad\bu_{\alpha}^{L}}
+\newcommand{\gbuadL}{\grad\bu_{\alpha,\delta}^{L}}
+\newcommand{\gbuaorL}{\grad\bu_{\alpha}^{(L)}}
+\newcommand{\gbuadorL}{\grad\bu_{\alpha,\delta}^{(L)}}
+\newcommand{\strdL}{\strs_{\delta,L}}
+\newcommand{\straL}{\strs_{\alpha}^{L}}
+\newcommand{\stradL}{\strs_{\alpha,\delta}^{L}}
+\newcommand{\straorL}{\strs_{\alpha}^{(L)}}
+\newcommand{\stradorL}{\strs_{\alpha,\delta}^{(L)}}
+% my space-discretised regularized variables
+\newcommand{\buhd}{\bu_{\delta,h}}
+\newcommand{\gbuhd}{\grad\bu_{\delta,h}}
+\newcommand{\strhd}{\strs_{\delta,h}}
+\newcommand{\buhdL}{\bu_{\delta,L,h}}
+\newcommand{\gbuhdL}{\grad\bu_{\delta,L,h}}
+\newcommand{\stradh}{\strs_{\alpha,\delta,h}}
+% my space-discretised regularized extra-diffusive variables
+\newcommand{\buhda}{\bu_{\alpha,\delta,h}}
+\newcommand{\gbuhda}{\grad\bu_{\alpha,\delta,h}}
+\newcommand{\strhda}{\strs_{\alpha,\delta,h}}
+\newcommand{\buhdLa}{\bu_{\alpha,\delta,h}}
+\newcommand{\gbuhdLa}{\grad\bu_{\alpha,\delta,h}}
+\newcommand{\strhdLa}{\strs_{\alpha,\delta,h}}
+\newcommand{\buhLa}{\bu_{\alpha,h}}
+\newcommand{\gbuhLa}{\grad\bu_{\alpha,h}}
+\newcommand{\strhLa}{\strs_{\alpha,h}}
+% my time-discretised variables
+\newcommand{\strn}{\strs^n}
+\newcommand{\strnp}{\strs^{n+1}}
+\newcommand{\bun}{\bu^n}
+\newcommand{\bunp}{\bu^{n+1}}
+\newcommand{\pn}{p^n}
+\newcommand{\qn}{q^n}
+\newcommand{\Ln}{\Lambda^n}
+\newcommand{\Lnp}{\Lambda^{n+1}}
+% my space-and-time-discretised variables
+\newcommand{\buhn}{\bu_h^n}
+\newcommand{\buhnp}{\bu_h^{n+1}}
+\newcommand{\buhnm}{\bu_h^{n-1}}
+\def\Dbuhnm{\boldsymbol{D}(\buhnm)}
+\def\Dbuhn{\boldsymbol{D}(\buhn)}
+\def\Dbuhnp{\boldsymbol{D}(\buhnp)}
+\newcommand{\strhnp}{\strs_h^{n+1}}
+\newcommand{\strhnpp}{\strs_h^{n+1,+}}
+\newcommand{\strhnpm}{\strs_h^{n+1,-}}
+\newcommand{\strhn}{\strs_h^n}
+\newcommand{\phn}{p_h^n}
+\newcommand{\phnp}{p_h^{n+1}}
+\newcommand{\gbuhnp}{\gbu_h^{n+1}}
+\newcommand{\gbuhn}{\gbu_h^n}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\usepackage{verbatim}
+%%
+%% Pour activer les commentaires
+%%
+%%
+\newcommand{\comment}[1]{ { ***~{\bf #1}~***}}
+%%
+%% Pour desactiver les commentaires
+%%
+% \newcommand{\comment}[1]{ }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%--------------------------------------------------------
+% \journalname{myjournal} % SPRINGER Insert the name of "your journal"
+
+\begin{document}
+
+%\markboth{SB}%S\'ebastien Boyaval}{Modelling and simulating}
+
+\title{Sur le couplage de mod\`eles fluides d\'etaill\'es pour la simulation de vagues en interaction avec une structure solide}
+
+%\thanks{Grants or other notes
+%about the article that should go on the front page should be
+%placed here. General acknowledgments should be placed at the end of the article.} % SPRINGER
+%\subtitle{..} % SPRINGER
+%\titlerunning{Reduced-Basis : Uncertain coefficients in elliptic PDEs}% SPRINGER
+
+\author{SB
+%S\'ebastien Boyaval
+% \footnote{
+% Laboratoire d'hydraulique Saint-Venant,\\ Universit\'e Paris-Est
+% (Ecole des Ponts ParisTech) EDF R\&D,\\ 6 quai Watier, 78401 Chatou Cedex, France
+% \\[2mm]       
+% sebastien.boyaval@enpc.fr
+% \\[2mm]
+% Present address: EPFL
+%}
+}
+%\authorrunning{Short form of author list} % SPRINGER if too long for running head
+
+%\address{EPFL}
+%\institute{SB \at UPE 
+%           \email{boyaval@}           %  \\
+%           \emph{Present address:} of F. Author  %  if needed
+%           \and
+%} % SPRINGER
+
+% \begin{history}
+% \received{}
+% \revised{}
+% \end{history}
+%\date{Received: date / Accepted: date} % SPRINGER
+%\date{\today}
+
+\maketitle
+
+\begin{abstract}
+Les vagues sont la superposition d'ondes de surface se propageant \`a l'interface entre deux fluides de densit\'es et compressibilit\'es tr\`es diff\'erentes: l'eau et l'air.
+Des mod\`eles  math\'ematiques permettent de reproduire assez pr\'ecis\'ement ces vagues, % \`a diff\'erentes \'echelles de temps et d'espace
+pour un co\^ut calculatoire peu \'elev\'e quand il s'agit par exemple d'ondes de gravit\'e se propageant \`a distance d'une fronti\`ere lat\'erale solide.
+Le cas d'une vague en interaction avec une fronti\`ere solide (flottante ou immerg\'ee) n\'ecessite au contraire d'utiliser un mod\`ele c\^outeux,
+capable de dissiper correctement l'\'energie aux petites \'echelles.
+On souhaiterait donc savoir d\'ecomposer le probl\`eme math\'ematique sur deux domaines, champs proches et champs lointains, o\`u on utiliserait respectivement
+les mod\`eles cher et peu c\^outeux.
+Mais la strat\'egie pour contr\^oler l'erreur de cette approximation par rapport \`a la solution compl\`ete sur tout le domaine n'est pas claire.
+En particulier, il n'existe pas de suite de probl\`emes d\'ecompos\'es convergeant vers la ``vraie'' solution,
+puisque le vrai probl\`eme n'est pas trait\'e exactement en champs lointains ! 
+(Les \'equations y sont modifi\'ees, ``simplifi\'ees''.)
+Toutefois, on peut esp\'erer qu'il existe une suite de probl\`emes d\'ecompos\'es convergeant vers quelque chose proche de la ``vraie'' solution.
+En particulier, on esp\`ere des r\'esultats num\'eriques de bonne qualit\'e en champs proches !
+Dans ce projet, on sugg\`ere une \'etude dans le but d'identifier un proc\'ed\'e d'approximation par {\it d\'ecomposition de domaine h\'et\'erog\`ene} tel qu'on ma\^itrise l'erreur.
+% \PACS{PACS code1 \and PACS code2 \and more}
+% \subclass{MSC code1 \and MSC code2 \and more}
+% \keywords{Finite element method, convergence analysis, existence of weak solutions.}%
+\end{abstract}
+
+%\subjclass{} %
+
+% \keywords{Finite element method, convergence analysis, existence of weak solutions.}%
+% \ccode{AMS Subject Classification: 35Q30, 65M12, 65M60, 76A10, 76M10, 82D60}
+
+%\tableofcontents
+
+%\begin{acknowledgements}
+%If you'd like to thank anyone, place your comments here
+%and remove the percent signs.
+%\end{acknowledgements}
+
+\section{Mod\`ele simplifi\'e en champs lointains sans interaction solide: d\'ecomposition sur des sous-domaines}
+
+\subsection{Mod\`ele simplifi\'e en champs lointains}
+
+On rappelle d'abord le mod\`ele complet, 
+pour une \'echelle r\'egionale \`a la surface de la Terre o\`u la gravit\'e $\f$ est suppos\'ee constante dans l'espace $\R^3$ \'equip\'e d'un rep\`ere Cart\'esien.
+Pour tous temps $t\in[0,T)$, il d\'ecrit l'eau comme un fluide homog\`ene incompressible continu occupant un domaine mobile simplement connexe
+qu'on suppose born\'e dans la direction $\be_z$
+$$
+\D(t) = \{ (x,y)\in\mathcal{O}\subset\R^2, z\in(b,\eta) \} \,.
+$$
+Dans la suite, on prendra une topographie $b$ constant en temps et simplement valu\'ee, ainsi que la surface $\eta$.
+Par incompressibilt\'e, le fluide est enti\`erement d\'ecrit par ses champs de vitesse et pression (volumique) $(\bu,p)$ solutions des \'equations de Navier-Stokes (NS) incompressibles
+\begin{equation}
+\label{eq:NS}
+ (\partial_t+\bu\cdot\grad)\bu + \grad p - \div(2\eta\Dbu) = \f \quad \div\bu = 0 \,,
+\end{equation}
+qu'on notera abusivement de mani\`ere identique dans la suite apr\`es adimensionement dans un domaine de taille unit\'e et sur un temps suffisamment long, 
+\'etant donn\'ee une condition initiale et un domaine physique.
+(Le seul nombre adimensionnel utile est le nombre de Reynolds $\eta$ si on consid\`ere les solutions globales -- en temps long -- de~\eqref{eq:NS},
+sur des domaines born\'es quelconques et pour une force $\f$ quelconque).
+Pour repr\'esenter des ph\'enom\`enes hydrodynamiques sur un domaine de taille maximale $L[m]$ o\`u la vitesse est d'ordre $U[ms^{-1}]$, on prendra
+$\eta\approx 10^{-6}U/L^2$, la viscosit\'e cin\'ematique de l'eau \'etant suppos\'ee constante ici, de l'ordre de $10^{-6}m^2s^{-1}$ comme dans l'oc\'ean.
+%   en multipliant toutes les dimensions d'espace par L, de temps par T et toutes les composantes de la solution par U=L/T, alors il suffit de connaitre les solutions de
+%   $$ (\partial_t+\bu\cdot\grad)\bu + \grad p - \div(2\eta\Dbu) = 0 \quad \div\bu = 0
+%   dans tous les domaines bornés de taille 1 dans la direction bornée, pour toutes les conditions initiales de norme 1 et tous les nombres de Reynolds \eta
+%   pour reconstruire vraiment toutes les solutions: il suffit de dilater correctement le temps et de conserver la similitude de Reynolds
+
+Les champs $(\bu,p)$ sont enti\`erement d\'etermin\'es (comme solutions d'un probl\`eme bien pos\'e dans un espace fonctionnel \`a pr\'eciser)
+quand on compl\`ete~\eqref{eq:NS} avec des conditions dynamiques sur $(-p\I+2\eta\Dbu)\bn$ aux bords $\partial\D(t)$ d'un domaine assez r\'egulier, 
+tel que la normale $\bn$ est d\'efinie presque partout, plus une condition initiale sur $\bu$ et sur $\eta$ solution de la condition cin\'ematique
+\begin{equation}
+\label{eq:conditioncinematique}
+ \partial_t\eta + u|_{z=\eta(t,x,y)}\partial_x \eta + v|_{z=\eta(t,x,y)}\partial_y \eta - w|_{z=\eta(t,x,y)} = 0 \,.
+\end{equation}
+
+Pour simplifier le mod\`ele, on peut commencer par consid\'erer la limite formelle non-visqueuse $\eta\to0$ de NS, soit les \'equations d'Euler incompressibles
+\begin{equation}
+\label{eq:euler}
+ (\partial_t+\bu\cdot\grad)\bu + \grad p = \f \quad \div\bu = 0 .
+\end{equation}
+Puis on peut supposer que la vorticit\'e du fluide $\omega:=\grad\times\bu$,
+qui est alors seulement transport\'ee (en tant que tenseur) selon l'\'equation
+\begin{equation}
+\label{eq:vorticite0}
+ (\partial_t+\bu\cdot\grad)\omega - \omega\cdot\grad\bu = 0\,,
+\end{equation}
+\'etait faible initialement, donc en fait pour tous temps en suivant~\eqref{eq:vorticite0}.
+(Par ailleurs, la vorticit\'e est exactement conserv\'ee dans un \'ecoulement 2D, tel que le probl\`eme est invariant par translation dans une direction,
+ce qui est proche d'un \'ecoulement stratifi\'ee dans une couche 3D de faible \'epaisseur.)
+On peut aussi partir de l'\'equation g\'en\'erale (diffusive !) de la vorticit\'e
+\begin{equation}
+\label{eq:vorticite}
+ (\partial_t+\bu\cdot\grad)\omega - \omega\cdot\grad\bu = \nu \Delta \omega\,,
+\end{equation}
+et en d\'eduire que la vorticit\'e est contr\^ol\'ee localement loin des bords\footnote{
+ En effet,~\eqref{eq:vorticite} n'exlcut pas la cr\'eation de vorticit\'e aux bords du domaine mobile $\D(t)$,
+ qui est souvent non n\'egligeable en 3D~\cite{yeh-1995,lundgren-koumoutsakos-1999}.
+}
+par sa valeur initiale, suppos\'ee faible. Dans les deux cas, l'\'ecoulement simplifi\'e est celui d'un fluide non-visqueux solution de~\eqref{eq:euler}.
+
+Pr\'ecis\'ement, un mod\`ele simplifi\'e est alors obtenu formellement en supposant le champs de vitesse irrotationel $\grad\times\bu=0$.
+Dans un domaine $\D$ simplement connexe, $\bu=\grad\phi$ s'exprime alors simplement \`a l'aide d'un potentiel scalaire $\phi$ % d\'efini \`a une fonction constante en espace pr\`es
+solution des \'equations de Laplace-Bernoulli
+\begin{equation}
+ \label{eq:laplacebernoulli}
+ \div \phi = 0 \quad \partial_t \phi + \frac{|\grad \phi|^2}2 + p - \f\cdot\xx = 0
+\end{equation}
+dans le domaine mobile $\D(t)$.
+
+En adjoignant les conditions aux bords~\eqref{eq:conditioncinematique}, $p\equiv p_0\in\R$ \'egal \`a la pression de l'air pr\`es de la surface libre, l'imperm\'eabilit\'e du fond fixe
+\begin{equation}
+\label{eq:impermeabilite}
+ u|_{z=b(x,y)}\partial_x b + v|_{z=b(x,y)}\partial_y \eta - w|_{z=b(x,y)} = 0 \,,
+\end{equation}
+(\'eventuellement des conditions aux parois lat\'erales du domaine) et une condition initiale pour $(\phi,\eta)$, le syst\`eme dit ``des vagues''
+\begin{equation}
+ \label{eq:waterwave}
+ \div \phi = 0 \quad \partial_t \phi|_{z=\eta(t,x,y)} + \frac{|\grad \phi|^2|_{z=\eta(t,x,y)}}2 + p_0 - \f\cdot\xx|_{z=\eta(t,x,y)} = 0
+\end{equation}
+d\'efinit finalement un probl\`eme de Cauchy bien pos\'e, dont des soltions num\'eriques s'approchent effectivement de certaines vagues oc\'eaniques.
+
+\subsection{R\'esolution num\'erique}
+
+On consid\`ere le probl\`eme des vagues en 2D, c'est-\`a-dire dans $\mathcal{O}=\{(x,y)\in[-L/2,L/2]\times\R\}$ avec invariance par translation dans la direction $\be_y$.
+On cherche $(\phi(t,x,z),\eta(t,x))$ solution de
+\begin{align}
+ \partial_t\eta(t,x) + \partial_x \phi(t,x,\eta(t,x)) \partial_x \eta(t,x) - \partial_z \phi(t,x,\eta(t,x)) & = 0
+\\
+ \partial_t\phi(t,x,\eta(t,x)) + \frac{|\grad \phi|^2(t,x,\eta(t,x))}2 + p_0 - g\sin\theta x + g\cos\theta\eta(t,x) & = 0
+\\
+ - (\partial^2_{xx} + \partial^2_{xx})\phi(t,x,z) & = 0
+\\
+ \partial_x \phi(t,x,b(x)) \partial_x b(x) - \partial_z \phi(t,x,b(x)) & = 0
+\end{align}
+typiquement r\'e\'ecrit 
+% pour $(\psi(t,x):=\phi(t,x,\eta(t,x)),w(t,x):=\partial_z\phi(t,x,\eta(t,x)),\eta(t,x))$
+% \begin{align}
+%  \partial_t\eta(t,x) + \partial_x \psi(t,x) \partial_x \eta(t,x) - (1+|\partial_x \eta(t,x)|^2) w(t,x) & = 0
+% \\
+%  \partial_t\psi(t,x) + \frac{|\partial_x \psi(t,x)|^2}2-\left(\:2\:\partial_x \psi(t,x) \partial_x \eta(t,x)-(1+|\partial_x \eta(t,x)|^2)w(t,x)\right)\frac{w(t,x)}2 & 
+% \\
+%  + p_0 - g\sin\theta x + g\cos\theta\eta(t,x) & = 0
+% \\
+%  - (\partial^2_{xx} + \partial^2_{xx})\phi(t,x,z) & = 0
+% \\
+%  \partial_x \phi(t,x,b(x)) \partial_x b(x) - \partial_z \phi(t,x,b(x)) & = 0
+% \end{align}
+% %en utilisant une formule de Green dans $\Omega(t)=\{(x,z)\in[-L/2,L/2]\times[b(x),\eta(t,x)]\}$ % suppos\'e r\'egulier, de normale
+% % $$
+% %  \int_\Omega - \div \grad \phi v = \int_\Omega \grad \phi \cdot \grad v - \int_{\partial\Omega} \partial_{\bn}\phi v
+% % $$
+% %avec des fonctions test $v$ suffisamment r\'eguli\`eres et $L$-p\'eriodiques en $x$, % \int_{z=b}^{z=\eta} \partial_x\phi v (t,-L/2,z) - \int_{z=b}^{z=\eta} \partial_x\phi v (t,+L/2,z) = 0
+% %\int_\Omega \grad \phi \cdot \grad v = \int_{x=-L/2}^{x=+L/2} (\bn\cdot\grad\phi)v|_{z=\eta(t,x)} dx
+% ou 
+pour $(\psi(t,x):=\phi(t,x,\eta(t,x)),\eta(t,x))$ depuis Zakharov (voir~\cite{craig-lannes-sulem-2011} par exemple\footnote{
+ Attention, il semble n\'eanmoins qu'une erreur tra\^ine dans la litt\'erature, e.g.~\cite{clamond-fructus-grue-2007}.
+})
+% \begin{align}
+%  \partial_t\eta(t,x) - G[\psi](t,x) & = 0
+% \\
+%  \partial_t\psi(t,x) - \frac{\partial_t\eta(t,x)}{1+|\partial_x \eta(t,x)|^2}\left(G[\psi](t,x)+\partial_x \eta(t,x) \partial_x\psi(t,x)\right) 
+%  + \frac{|\partial_x \psi(t,x)|^2 +  |G[\psi](t,x)|^2}2 & \nonumber
+% \\
+%  + p_0 - g\sin\theta x + g\cos\theta\eta(t,x) & = 0
+% \end{align}
+% via le changement d'inconnues (pour $t$ avec $\Omega(t)=\{(x,z)\in[-L/2,L/2]\times[b(x),\eta(t,x)]\}$ d\'efini)
+% $$
+% \begin{pmatrix}
+%  - \partial_x \eta & 1 
+% \\
+%  1 & \partial_x \eta
+% \end{pmatrix}
+% \begin{pmatrix}
+% \partial_x \phi |_{z=\eta}
+% \\
+% \partial_z \phi |_{z=\eta}
+% \end{pmatrix}
+% =
+% \begin{pmatrix}
+% G[\psi]
+% \\
+% \partial_x \psi 
+% \end{pmatrix}
+% $$
+% $$
+% \Leftrightarrow
+% \begin{pmatrix}
+% \partial_x \phi |_{z=\eta}
+% \\
+% \partial_z \phi |_{z=\eta}
+% \end{pmatrix}
+% =
+% \frac1{1+|\partial_x \eta(t,x)|^2}
+% \begin{pmatrix}
+%  -\partial_x \eta & 1 
+% \\
+%   1 & \partial_x \eta
+% \end{pmatrix}
+% \begin{pmatrix}
+% G[\psi]
+% \\
+% \partial_x \psi 
+% \end{pmatrix}\,,
+% $$
+\begin{align}
+ \partial_t\eta - G[\psi] & = 0
+\\
+ \partial_t\psi + \frac{|\partial_x \psi|^2 - |G[\psi]|^2 - 2 G[\psi] \partial_x \eta \partial_x\psi}{2(1+|\partial_x \eta|^2)} + p_0 - g\sin\theta x + g\cos\theta\eta(t,x) & = 0
+\end{align}
+o\`u on a utilis\'e l'op\'erateur ``Dirichlet-Neumann'' pour la vitesse (renormalis\'ee) de l'interface
+$$
+G[\psi](t,x) := \sqrt{(1+|\partial_x \eta(t,x)|^2)} (\bn\cdot\grad\phi)|_{z=\eta(t,x)} % = - \left( \partial_x \psi(t,x) \partial_x \eta(t,x) - (1+|\partial_x \eta(t,x)|^2) w(t,x)\right) 
+= - \left( \partial_x \phi(t,x,\eta(t,x)) \partial_x \eta(t,x) - \partial_z \phi(t,x,\eta(t,x)) \right),
+$$
+qui est d\'efini par la solution du probl\`eme (mixte Dirichlet-Neumann) de Laplace pour $\phi$ dans $\Omega(t)=\{(x,z)\in[-L/2,L/2]\times[b(x),\eta(t,x)]\}$, 
+avec les conditions lat\'erales en $x=\pm L/2$, %par exemple des conditions p\'eriodiques en $x=\pm L/2$
+l'imperm\'eabilit\'e au fond,
+$$
+ -\Delta \phi = 0 
+$$
+plus la condition de type Dirichlet $\phi(t,x,\eta(t,x))=\psi(t,x)$ au bord $z=\eta(t,x)$.
+
+En premi\`ere approche, on peut penser discr\'etiser le probl\`eme en appliquant it\'erativement,
+une m\'ethode de discr\'etisation {\it volumique} \`a l'\'equation de Laplace pour $\phi$, % dans un domaine mobile,
+et une m\'etode {\it explicite} d'ordre assez \'elev\'e pour l'int\'egration en temps de $(\eta,\psi)$.
+Ainsi, \`a des temps discrets $0=:t^0<t^1<\ldots<t^{n}<t^{n+1}<\ldots$, connaissant $\psi^n$ et (un maillage de) $\Omega^n$, on calcule par exemple
+\begin{enumerate}
+ \item %i) 
+la solution $\phi^n$ du probl\`eme %mixte 
+de Laplace dans $\Omega^n$ avec $\psi^n$ en condition de Dirichlet en ``surface'',
+ \item %ii) 
+puis une vitesse $G^n[\psi^n]$ en ``surface'' % (du maillage) 
+de $\Omega^n$, consistante avec la condition cin\'ematique,
+ \item %iii) 
+puis une vitesse $w^n$ pour l'ensemble (du maillage de) $\Omega^n$, consistante avec $G^n[\psi^n]$,
+ \item %iv)
+et des mises \`a jour i) (du maillage) de $\Omega^n$ et ii) de $\psi^n$ (e.g. explicites), avant de boucler.
+\end{enumerate}
+Noter que l'ordre des mises \`a jour dans la derni\`ere \'etape est importante: 
+une contrainte g\'eom\'etrique sur le pas de temps s'applique n\'ecessairement au maillage, avant la stabilit\'e des EDP (condition CFL)\dots qu'il reste d'ailleurs \`a \'ecrire
+(formellement, puis discr\`etement en temps, avant une version totalement discr\`ete)~!
+
+Dans le cas de champs \'el\'ements finis (EF) sur des simplexes, $\phi \in \mathbb{P}^2$ et $w \in \mathbb{P}^1$ 
+sont des % seul ?
+choix ``naturels'' qui permettent de calculer les termes nonlin\'eaires (dans les mises \`a jour de $\psi$ et du maillage de $\Omega$) en minimisant la place des interpolations num\'eriques:
+\begin{enumerate}
+ \item
+$\phi^n\in\mathbb{P}^2$ est solution (r\'eguli\`ere) du probl\`eme de Laplace dans $\Omega^n$ 
+si on impose une condition $\mathbb{P}^2$ approchant $\psi^n$ %\in \mathbb{P}^2_{dc}
+en ``surface'',
+ \item
+$w^n \in \mathbb{P}^1$ (vitesse pour l'ensemble du maillage de $\Omega^n$, qu'on choisira typiquement ALE dans ce cadre EF\footnote{
+ On peut introduire l'inconnue $\eta^n\in\mathbb{P}_1$ pour le d\'eplacement {\it vertical} (dans la direction $\be_z$) des n{\oe}uds du maillage 
+ par rapport \`a un maillage de r\'ef\'erence o\`u la surface libre est plate.
+ Cela permet de mettre \`a jour facilement l'inconnue $\psi$, qui \'evolue ``simplement'' dans un maillage transport\'e.
+ Une approximation de la normale \`a la surface libre aux noeuds est par ailleurs classique dans ce cadre.
+ Toutefois, le choix pr\'ecis du probl\`eme de Laplace (c.a.d. des ``coefficients de diffusion'') \`a utiliser pour calculer une vitesse de d\'eplacement du maillage est souvent ouvert !
+})
+peut \^etre calcul\'ee comme une solution (r\'eguli\`ere) d'un probl\`eme de Laplace dans $\Omega^n$
+si on impose une condition cin\'ematique $\mathbb{P}^1$ approchant $G^n[\psi^n]$ en ``surface''.
+\end{enumerate}
+Bien s\^ur, \`a cause des termes nonlin\'eaires dans les mises \`a jour du maillage $\Omega^n$ et de $\psi^n$, 
+ces approximations sont probablement trop diffusives et dispersives en comparaison d'approximations d'ordre plus \'elev\'e en espace (spectrales, par exemple),
+voire m\^eme encore potentiellement instables tant qu'on a pas tout analys\'e (choix du pas de temps).
+Toutefois, elles ont l'avantage de s'\'ecrire dans le m\^eme cadre discret que des m\'ethodes classiques de discr\'etisation du mod\`ele complet (ce qui faciliterait le couplage et sa compr\'ehension), et rien n'emp\^eche par ailleurs de monter en ordre dans la discr\'etisation en temps 
+(avec des sch\'emas de type Runge-Kutta, voire symplectiques si on sait \'ecrire les \'equations discr\'etis\'ees en espace sous une forme Hamiltonienne).
+
+Au deuxi\`eme regard, on peut penser \`a des m\'ethodes d'approximation plus pr\'ecises pour le cas particulier de l'\'equation de Laplace,
+par exemple une m\'ethode d'\'el\'ements fronti\`eres pour discr\'etiser la formulation int\'egrale obtenue avec le noyau de Green~\cite{grilli-guyenne-dias-2001}.
+L'\'etude du couplage avec le mod\`ele Navier-Stokes sera toutefois probablement plus compliqu\'ee.
+
+\begin{remark}
+Une autre formulation est encore
+\begin{align}
+ \partial_t\eta = \partial_x \eta\partial_x \psi - (1+|\partial_x \eta|^2) w
+\\
+ \partial_t\psi + \frac{|\partial_x \psi|^2}2 - |\frac{(1+|\partial_x \eta|^2)w^2}2 + p_0 - g\sin\theta x + g\cos\theta\eta(t,x) & = 0
+\end{align}
+avec $w = \partial_z \phi|_{z=\eta}$, ce qui pourrait \^etre plus facile \`a r\'esoudre de mani\`ere volumique:
+posons $\phi(x,z)=\tilde\phi() $
+\end{remark}
+
+
+
+\subsection{D\'ecomposition du mod\`ele simplifi\'e sur des sous-domaines}
+
+Afin de comprendre le m\'ecanisme de couplage d'\'equations entre sous-domaines (c.a.d. sa convergence) on propose de commencer cette \'etude sur le mod\`ele simplifi\'e,
+d'abord dans le cas d'une discr\'etisation volumique.
+
+Peut-on s'inspirer de~\cite{quarteroni-valli-1999} ?
+
+\section{Du mod\`ele simplifi\'e au mod\`ele complet}
+
+Avant d'essayer de coupler directement un mod\`ele simplifi\'e potentiel avec un mod\`ele visqueux complet,
+on pourrait essayer de comprendre l'impact d'une correction visqueuse au mod\`ele simplifi\'e dans un sous-domaine, tel que~\cite{dutykh-dias-2007,dutykh-2009}.
+
+% \begin{itemize}
+%  \item 
+% \end{itemize}
+
+D'abord, quand une correction visqueuse apporte-t-elle quelque chose ? 
+Plus pr\'ecis\'ement, dans quel cas am\'eliore-t-elle effectivement l'\'evolution de la partie potentielle du champs de vitesse ?
+
+Ensuite, la correction~\cite{dutykh-dias-2007,dutykh-2009} semble fait sp\'ecifiquement pour les effets de bords au fond et \`a la surface libre.
+Peut-on proposer de m\^eme une correction en pr\'esence d'un corps rigide flottant ou immerg\'e, pr\`es de sa paroi ?
+
+Enfin, comment simuler un tel mod\`ele ?
+Peut-on le coupler \`a un mod\`ele potentiel pur, par exemple en s'inspirant de~\cite{gander-halpern-japhet-martin-2008,gander-halpern-martin-2011,gander-martin-2013} ?
+Comment cela se compare-t-il \`a un mod\`ele potentiel pur en intercation avec un solide ?
+
+\section{Couplage de mod\`eles simplifi\'e et complet}
+
+Peut-on, et \`a quoi servirait de, coupler directement mod\`eles potentiel (pur) et visqueux (complet) ?
+%Dans le cas d'une interaction fluide-solide, ou surface-libre -- idem ?
+On peut aussi commencer par l'autre bout du probl\`eme et d\'egrader un mod\`el complet.
+
+D'abord, dans quelle limite un mod\`ele visqueux complet est-il effectivement capable de bien pr\'evoir l\'ecoulement en champs proche ? (turbulence en particulier)
+Comment est-il sensible aux conditions de bord ?
+Peut-on lui soumettre des conditions de bord calcul\'ees avec un mod\`ele potentiel (pur/corrig\'e) coupl\'e (avec/sans recouvrement) ?
+
+\subsection{R\'esolution num\'erique du mod\`ele complet en champs proches}
+
+On rappelle d'abord le mod\`ele complet, 
+pour une \'echelle r\'egionale \`a la surface de la Terre o\`u la gravit\'e $\f$ est suppos\'ee constante dans l'espace $\R^3$ \'equip\'e d'un rep\`ere Cart\'esien.
+Pour tous temps $t\in[0,T)$, il d\'ecrit l'eau comme un fluide homog\`ene incompressible continu occupant un domaine mobile simplement connexe
+qu'on suppose born\'e dans la direction $\be_z$
+$$
+\D(t) = \{ (x,y)\in\mathcal{O}\subset\R^2, z\in(b,\eta) \} \,.
+$$
+Dans la suite, on prendra une topographie $b$ constant en temps et simplement valu\'ee, ainsi que la surface $\eta$.
+Par incompressibilt\'e, le fluide est enti\`erement d\'ecrit par ses champs de vitesse et pression (volumique) $(\bu,p)$ solutions des \'equations de Navier-Stokes (NS) incompressibles
+\begin{equation}
+\label{eq:NS1}
+ (\partial_t+\bu\cdot\grad)\bu + \grad p - \div(2\eta\Dbu) = \f \quad \div\bu = 0
+\end{equation}
+o\`u on a not\'e $\eta$ la viscosit\'e cin\'ematique de l'eau, suppos\'ee constante ici ($\eta\approx 10^{-6}m^2s^{-1}$ dans l'oc\'ean).
+Les champs $(\bu,p)$ sont enti\`erement d\'etermin\'es (comme solutions d'un probl\`eme bien pos\'e dans un espace fonctionnel \`a pr\'eciser)
+quand on compl\`ete~\eqref{eq:NS} avec des conditions dynamiques sur $(-p\I+2\eta\Dbu)\bn$ aux bords $\partial\D(t)$ d'un domaine assez r\'egulier, 
+tel que la normale $\bn$ est d\'efinie presque partout, plus une condition initiale sur $\bu$ et sur $\eta$ solution de la condition cin\'ematique
+\begin{equation}
+\label{eq:conditioncinematique1}
+ \partial_t\eta + u|_{z=\eta(t,x,y)}\partial_x \eta + v|_{z=\eta(t,x,y)}\partial_y \eta - w|_{z=\eta(t,x,y)} = 0 \,.
+\end{equation}
+
+En parall\`ele de la m\'ethode de discr\'etisation volumique du mod\`ele simplifi\'e (\'equations de Zakharov) on peut penser utiliser une disc\'etisation de~\eqref{eq:NS1}
+dans un (maillage du) domaine mobile $\D(t)$, qui serait calcul\'e via~\eqref{eq:conditioncinematique1} par une m\'ethode ALE 
+(Arbitrary-Lagrangian-Eulerian: on d\'eplace le maille pour \'eviter le remaillage syst\'ematique).
+
+Commen\c{c}ons par un cas 2D, invariant par translation dans la direction $\be_y$.
+Ainsi, \`a des temps discrets $0=:t^0<t^1<\ldots<t^{n}<t^{n+1}<\ldots$, connaissant $\bu^n$ et 
+(un maillage de) $\Omega^n$ approchant $\Omega(t^n)=\{(x,z)\in[-L/2,L/2]\times[b(x),\eta(t^n,x)]\}$, on calcule, par exemple explicitement en temps,
+\begin{enumerate}
+ \item une nouvelle vitesse $\bu^{n+1}$ dans $\Omega^n$,
+ \item puis une ``vitesse de maillage'' $w^{n+1}$, en fait un d\'eplacement $\dt^n w^{n+1}$ de $\Omega^n$ vers $\Omega^{n+1}$ compatible avec la condition cin\'ematique sur $\eta$.
+\end{enumerate}
+
+Avec $\Omega^n$ un maillage {\it symplectique} de $\Omega(t^n)$, on choisit typiquement $w^{n+1}$ comme une fonction \'el\'ements-finis (EF) $w \in \mathbb{P}^1$ \`a $t^{n+1}$ sur $\Omega^n$,
+afin que $\Omega^{n+1}$ reste un maillage symplectique, solution d'une \'equation de Laplace
+$$
+ - \Delta w^{n+1} = 0
+$$
+
+
+% \section{Conclusion}
+% 
+% Il y a des questions
+% \begin{itemize}
+%  \item d'ordre analyse num\'erique sur la discr\'etisation des mod\`eles potentiels
+%  \item d'ordre analyse asymptotique sur les corrections visqueuses et la simplification de mod\`ele
+%  \item d'ordre g\'enie m\'ecanique et num\'erique sur la simulation directe des \'ecoulements complexes avec des outils logiciels existant
+% \end{itemize}
+% 
+% But du projet: simuler un objet flottant en interaction avec des vagues.
+% 
+% La modelisation des vagues etant generalement plus performante avec un modele potentiel,
+% on propose dans une premiere etape d'etudier comment un tel modele est impacte par la presence d'un corps solide, en calculant une correction visqueuse.
+% Peut-on utiliser, en presence d'un corps solide, l'approche de Denys Dutykh [Visco-potential free-surface flows and long wave modelling, European
+% Journal of Mechanics - B/Fluids 28 (2009), no. 3, 430 – 443], qui part du modele lineaire pour proposer une correction visqueuse (sans corps solide !) a la surface libre et au fond ?
+% 
+% Dans un deuxieme temps, on essaiera d'autre part de calculer directement les interactions d'un objet (flottant ou immerge) avec des vagues, 
+% avec un outil de simulation numerique avance (code SATURNE, discretisant les equations completes de Navier-Stokes), couteux mais capable de bien reproduire les effets visqueux et turbulents.
+% On etudiera en particulier les limites de cette approche a reproduire des vagues sur de grandes echelles (influence de la taille et des bords du domaine). 
+% 
+% Enfin, dans un troisieme temps, on etudiera le couplage de SATURNE avec un code discetrisant le modele potentiel.
+% Sous-question: comment coupler divers sous-domaines potentiels entre eux, dont un eventuellement avec une correction visqueuse qu'on pourait remplacer par SATURNE.
+% Il faut bien sur que d'une part, SATURNE puisse etre force aux bords par la solution d'un modele potentiel pur (c'est l'etape 2 ci-dessus).
+% Et qu'on comprenne d'autre part comment une pertubation visqueuse se propage dans un modele potentiel (c'est l'etape 1 ci-dessus). 
+
+\appendix
+
+\section{Discr\'etisation de Navier-Stokes par \'el\'ements finis}
+
+La discr\'etisation de probl\`emes %stationnaires 
+de Dirichlet/Neumann sur un domaine born\'e assez r\'egulier pour l'\'equation de %Laplace
+la chaleur avec une m\'ethode d'EF $\mathbb{P}^k$ ($k\ge1$) a fait ses preuves (en terme de robustesse et d'optimalit\'e).
+D\'ej\`a le passage \`a Stokes est plus difficile.
+
+Une approche ``monolithique en temps'' pour un probl\`eme de type Stokes (lin\'eaire elliptique/parabolique, mais avec contrainte globale) 
+n\'ecessite des \'el\'ements $([\mathbb{P}^k]^d,\mathbb{P}^{k-1})$ par exemple, ou un terme non-consistant de stabilisation.
+On a alors encore un probl\`eme bien pos\'e, mais il faut inverser une matrice singuli\`ere (point-selle).
+
+Puis dans cette veine, les probl\`eme de Oseen (lin\'eaire) et Navier-Stokes (non-lin\'eaire), qui ajoutent un terme non-sym\'etrique, montrent les limites de l'approche EF.
+N\'eanmoins, on peut consid\'erer le probl\`eme en temps suivant, apr\`es discr\'etisation EF dans un maillage mobile $\Omega(t)$,
+stable pour des Reynolds assez petits:
+trouver $(\bu,p)$ dans $([\mathbb{P}^k]^d,\mathbb{P}^{k-1})$ solutions de
+$$
+\int_{\Omega} \left( \partial_t\bu\cdot\bv+ [(\bu\cdot\grad)\bu]\cdot\bv - p \div\bv + q \div\bu + 2\eta\Dbu:\Dbv - \f\cdot\bv \right)
+= 0  \quad  \forall (\bv,q)\in([\mathbb{P}^k]^d,\mathbb{P}^{k-1})
+$$
+En notant $\bw$ la vitesse du maillage par rapport \`a un maillage fixe, cela peut aussi s\'ecrire
+$$
+\frac{d}{dt} \int_{\Omega} \bu\cdot\bv + \int_{\Omega} \left( [((\bu-\bw)\cdot\grad)\bu]\cdot\bv - (\div\bw)\bu\cdot\bv - p \div\bv + q \div\bu + 2\eta\Dbu:\Dbv - \f\cdot\bv \right)
+= 0  \,. %\quad  \forall (\bv,q)\in([\mathbb{P}^k]^d,\mathbb{P}^{k-1})
+$$
+
+On peut donc trouver plusieurs discr\'etisations en temps, par ex.
+\begin{multline}
+ \int_{\Omega^{n+1}} \bu^{n+1}\cdot\bv  - \int_{\Omega^{n}} \bu^{n}\cdot\bv  
++ \dt \int_{\Omega^{n+1}} \left( [((\bu^{n}-\bw^{n})\circ(\I+\dt\bw^n)\cdot\grad)\bu^{n+1}]\cdot\bv - (\div\bw^n)\bu^{n+1}\cdot\bv \right)
+\\
++ \dt \int_{\Omega^{n+1}} \left( - p^{n+1} \div\bv + q \div\bu^{n+1} + 2\eta\Dbu^{n+1}:\Dbv - \f\cdot\bv \right) = 0 \quad \forall (\bv,q)\in([\mathbb{P}^k]^d,\mathbb{P}^{k-1})
+\end{multline}
+avec $\bw^n$ la vitesse du d\'eplacement $\Omega^{n}\to\Omega^{n+1}:\xx\to\xx+\dt\bw^n(\xx)$, ou
+\begin{multline}
+ \int_{\Omega^{n+1}} \left( \bu^{n+1}\cdot\bv - [\bu^{n}\circ(\I+\dt\bw^n)]\cdot\bv + \dt [((\bu^{n}-\bw^{n})\circ(\I+\dt\bw^n)\cdot\grad)\bu^{n+1}]\cdot\bv \right)
+\\
++ \dt \int_{\Omega^{n+1}} \left( - p^{n+1} \div\bv + q \div\bu^{n+1} + 2\eta\Dbu^{n+1}:\Dbv - \f\cdot\bv \right) = 0 \quad \forall (\bv,q)\in([\mathbb{P}^k]^d,\mathbb{P}^{k-1})
+\end{multline}
+
+Les propri\'et\'es g\'eom\'etriques et de conservation discr\`etes d\'ependent alors du sch\'ema en temps comme de la formulation, ainsi que pr\'ecision et robustesse.
+(La conservation de la masse s'\'ecrit $\int_{-L/2}^{L/2} \eta(x,t)dx = cst $ ici.)
+Une question naturelle dans le cadre pr\'esent est: quelles solutions de type ``vague'' peut-on approcher avec un tel sch\'ema ?
+On peut essayer de calculer l'\'energie des vagues, et estimer leur dissipation num\'erique.
+
+D'autre part, puisqu'on a affaire \`a un probl\`eme d'\'evolution dont l'op\'erateur semi-groupe peut se d\'ecomposer en plusieurs op\'erateurs successifs, 
+on peut aussi invoquer des m\'ethodes \`a % plusieurs \'etapes
+pas % s\'epar\'ees
+dites fractionnaires en temps.
+
+Question: cette approche est-elle plus prometteuse ?
+On ne voit pas pourquoi elle serait plus pr\'ecise (en terme d'ordre) ou plus stable,
+mais peut-\^etre permet-elle une meilleure conservation ?
+Elle semble souvent favoris\'ee pour des probl\`emes %complexes 
+tels qu'en oc\'eano~\cite{li-fleming-2003}.
+
+%\bibliographystyle{ws-m3as}
+\bibliographystyle{amsplain}
+%\bibliographystyle{plain}
+%\bibliographystyle{plain}
+%\bibliographystyle{spbasic}      % basic style, author-year citations
+%\bibliographystyle{spmpsci}      % mathematics and physical sciences
+%\bibliographystyle{spphys}       % APS-like style for physics
+
+%\bibliography{refs_polymer,biblio_lelievre,polyjwbesrefs,refs_moi}
+%\bibliography{../../bibliography/refs_polymer,../../bibliography/biblio_lelievre,../../bibliography/polyjwbesrefs,../../bibliography/refs_moi}
+%\bibliography{/home/boyaval/CERMICS/bibliography/refs_polymer.bib,/home/boyaval/CERMICS/bibliography/polyjwbesrefs.bib}
+%\bibliography{$HOME/Desktop/bibliography/RB_book,$HOME/Desktop/bibliography/refs_prob,$HOME/Desktop/bibliography/refs_moi} % name your BibTeX data base
+%\bibliography{myrefs}
+%\bibliography{$HOME/Desktop/bibliography/myrefs}
+%\bibliography{$HOME/Bureau/u_boyaval_r_Desktop/bibliography/myrefs}
+%\bibliography{$HOME/Bureau/Z_boyaval/database/myrefs}
+%\bibliography{/home/sebastien/Bureau/Z_boyaval/database/myrefs} % portable
+%\bibliography{/home/boyaval/Bureau/Z_boyaval/database/myrefs} % EPFL
+%\bibliography{../bibliography/myrefs} % CERMICS
+%\bibliography{/home/boyaval/Desktop/bibliography/myrefs} % INRIA
+\bibliography{/local00/home/SB03743S/Desktop/Z/database/myrefs} % EDF
+
+\end{document}

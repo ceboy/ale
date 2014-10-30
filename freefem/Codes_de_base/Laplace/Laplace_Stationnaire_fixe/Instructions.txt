@@ -1,0 +1,13 @@
+############ Gnuplot
+
+set autoscale
+
+plot 'convergenceP2.gp' u (log($1)):(log($2)) w line
+
+replot 2*x w line
+
+replot 'convergenceP1.gp' u (log($1)):(log($2)) w line
+
+replot x+0.7 w line
+
+replot 'convergenceP1b.gp' u (log($1)):(log($2)) w line

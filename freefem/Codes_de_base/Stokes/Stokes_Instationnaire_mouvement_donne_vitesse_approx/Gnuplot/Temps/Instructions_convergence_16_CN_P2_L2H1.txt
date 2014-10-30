@@ -1,0 +1,18 @@
+############ Gnuplot
+
+
+set autoscale
+set title 'Erreur en temps pour la norme L2H1 - Stokes'
+set xlabel 'log(pas)'
+set ylabel 'log(erreur)'
+
+plot 'convergence_16_CN_P2_L2H1.gp' u (log($1)):(log($2)) w line t 'CN'
+
+
+
+replot 2*x-1 w line t 'ordre 2'
+
+set term postscript enhanced color
+set output "convergence_9_CN_P2_L2H1.eps"
+replot
+unset output

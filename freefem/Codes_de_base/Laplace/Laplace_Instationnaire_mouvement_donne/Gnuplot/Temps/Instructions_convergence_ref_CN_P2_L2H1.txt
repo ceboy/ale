@@ -1,0 +1,24 @@
+############ Gnuplot
+
+
+set title 'Erreur L2H1 en temps pour EI'
+set autoscale
+set xlabel 'log(pas)'
+set ylabel 'log(erreur)'
+
+plot 'convergence_ref_CN_P2_L2H1.gp' u (log($1)):(log($2)) w line t 'CN'
+
+
+
+replot 2*x w line t 'ordre 2'
+
+replot 2*x+1 w line t 'ordre 2'
+
+#replot 2*x+1.3 w line t 'ordre 2'
+
+#replot x-1.5 w line  t 'ordre 1'
+
+set term postscript enhanced color
+set output "convergence_CN_L2H1.eps"
+replot
+unset output

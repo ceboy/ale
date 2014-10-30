@@ -1,0 +1,10 @@
+############ Gnuplot
+
+
+set autoscale
+
+
+plot 'convergence_9_EI_P2_L2H1.gp' u (log($1)):(log($2)) w line t 'EI'
+
+replot x w line t 'ordre 1'
+

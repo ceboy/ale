@@ -1,0 +1,282 @@
+// Laplace
+
+
+///////////////////////////////////////////////////////////////////////////////////    Données
+verbosity = 1;
+
+real eps1 = 1.e-10;
+real mytgv = 1.e30;
+
+real rho = 1; real mu = 1.e-3;
+
+real g = 10;
+
+// Géomterie de la vague
+real Hwave = 0.1;
+real hwave = 3;
+real kwave = 3;
+real wwave = sqrt(g*kwave*tanh(kwave*hwave));
+real Twave = 2*pi/wwave;
+real Lwave = 2*pi/kwave;
+
+// Géometrie du maillage de référence
+real x0=0;
+real x1=2*pi;
+
+real y0=0;
+real y1=hwave;
+
+real t=0;
+
+
+///////////////////////////////////////////////////////////////////////////////////    Pas de temps
+real pas;
+real T;
+int mypas=0;
+while(mypas>16 || mypas<1){
+	cout<<"Choix du pas de temps : entre 1 et 16 du plus grossier au plus fin"<<endl;
+	cin>> mypas;
+}
+
+if (mypas==1){
+	pas=0.6;
+	T=10.;
+}
+if (mypas==2){
+	pas=0.5;
+	T=12.;
+}
+if (mypas==3){
+	pas=0.4;
+	T=15.;
+}
+if (mypas==4){
+	pas=0.3;
+	T=20.;
+}
+if (mypas==5){
+	pas=0.2;
+	T=30.;
+}
+if (mypas==6){
+	pas=0.15;
+	T=40.;
+}
+if (mypas==7){
+	pas=0.1;
+	T=60.;
+}
+if (mypas==8){
+	pas=0.06;
+	T=100.;
+}
+if (mypas==9){
+	pas=0.05;
+	T=120.;
+}
+if (mypas==10){
+	pas=0.04;
+	T=150.;
+}
+if (mypas==11){
+	pas=0.03;
+	T=200.;
+}
+if (mypas==12){
+	pas=0.02;
+	T=300.;
+}
+if (mypas==13){
+	pas=0.015;
+	T=400.;
+}
+if (mypas==14){
+	pas=0.01;
+	T=600.;
+}
+if (mypas==15){
+	pas=0.006;
+	T=1000.;
+}
+if (mypas==16){
+	pas=0.005;
+	T=1200.;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////    Maillage de référence
+int finesse=-1;
+int coef;
+while(finesse>16 || finesse<1){
+	cout<<"Choix du maillage : entre 1 et 16 du plus grossier au plus fin"<<endl;
+	cin>> finesse;
+}
+if (finesse==1){
+	coef=20;
+}
+if (finesse==2){
+	coef=25;
+}
+if (finesse==3){
+	coef=30;
+}
+if (finesse==4){
+	coef=35;
+}
+if (finesse==5){
+	coef=45;
+}
+if (finesse==6){
+	coef=50;
+}
+if (finesse==7){
+	coef=55;
+}
+if (finesse==8){
+	coef=60;
+}
+if (finesse==9){
+	coef=65;
+}
+if (finesse==10){
+	coef=70;
+}
+if (finesse==11){
+	coef=75;
+}
+if (finesse==12){
+	coef=80;
+}
+if (finesse==13){
+	coef=85;
+}
+if (finesse==14){
+	coef=90;
+}
+if (finesse==15){
+	coef=95;
+}
+if (finesse==16){
+	coef=100;
+}
+mesh Th=square(coef,coef,[x0+(x1-x0)*x,y0+(y1-y0)*y],flags=3);
+// plot(Th);
+///////////////////////////////////////////////////////////////////////////////////    Formule variatonnelle
+varf mass(u,v) = int2d(Th)(u*v);
+
+varf rigidity(u,v) = int2d(Th)(dx(u)*dx(v)+dy(u)*dy(v));
+
+varf boundary(u,v) = on(1,3,u=1);
+
+varf boundary1(u,v) = on(1,u=1);
+
+varf boundary2(u,v) = on(2,u=1);
+
+varf boundary3(u,v) = on(3,u=1);
+
+varf boundary4(u,v) = on(4,u=1);
+
+varf SecMem(u,v) = int2d(Th)(0.*v);
+
+
+
+///////////////////////////////////////////////////////////////////////////////////    Discrétisation en espace
+
+/// Espaces de discrétisation
+string discr="P2";
+fespace Poth(Th,P2,periodic=[[2,y],[4,y]]);
+Poth phi,dphi,moy;
+
+
+
+fespace Uh(Th,P1dc,periodic=[[2,y],[4,y]]); 
+Uh u,v;
+
+/// Construction du problème linéaire
+
+matrix MASS = mass(Poth,Poth,tgv=mytgv);
+
+matrix RIGIDITY = rigidity(Poth,Poth,tgv=mytgv);
+
+// matrix BOUNDARYPENALIZATION = boundary(Poth,Poth,tgv=mytgv); 
+// 
+// RIGIDITY=RIGIDITY+BOUNDARYPENALIZATION;
+
+real[int] NEUMANN(Poth.ndof);
+
+
+///////////////////////////////////////////////////////////////////////////////////    Discrétisation en espace
+
+
+/// stockage des résultats
+real[int,int] pottab(Poth.ndof,T);
+
+
+for (int iter=0;iter<T;iter++){
+	
+	/// Mise à jour du temps
+	t+=pas;
+	cout<<"t : "<<t<<endl;
+	
+	/// Construction du second membre 
+
+	dphi=(pi*Hwave/Twave)*(sinh(kwave*(y))/sinh(kwave*hwave))*sin(kwave*x-wwave*t); 
+
+	varf neumann(u,v)=int1d(Th,3)(dphi*v);
+	NEUMANN(0:Poth.ndof-1)=neumann(0,Poth);
+// 	Poth test;
+// 	test[]=NEUMANN(0:Poth.ndof-1);
+// 	plot(test,wait=1);
+	/// Résolution du problème linéaire
+	real[int] Pot(Poth.ndof);
+	set(RIGIDITY,eps=eps1,solver=UMFPACK);
+	Pot=RIGIDITY^-1*NEUMANN;
+
+	/// Post processing
+	phi[]=Pot(0:Poth.ndof-1);
+	
+// 	moy=int2d(Th)(phi);
+// 	cout<<phi[]<<endl;
+// 	phi[]=phi[]-moy[];
+	plot(phi,wait=1,fill=1,cmm=t,value=1);
+
+	pottab(0:Poth.ndof-1,iter)=phi[];
+	
+	u=dx(phi);
+	v=dy(phi);
+	plot(Th,[u,v],wait=1,boundary=0);
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////    Visualisation et Sauvegarde des données
+
+/// Création des divers dossiers de stockage
+// exec("mkdir "+"Vitesses");
+// exec("mkdir "+"Vitesses/"+maillage);
+// exec("mkdir "+"Vitesses/"+maillage+"/"+schema);
+// exec("mkdir "+"Vitesses/"+maillage+"/"+schema+"/"+discr);
+// exec("mkdir "+"Vitesses/"+maillage+"/"+schema+"/"+discr+"/"+pas);
+// exec("mkdir "+"Vitesses/"+maillage+"/"+schema+"/"+discr+"/"+pas+"/u");
+// exec("mkdir "+"Vitesses/"+maillage+"/"+schema+"/"+discr+"/"+pas+"/v");
+// exec("mkdir "+"Vitesses/"+maillage+"/"+schema+"/"+discr+"/"+pas+"/p");
+// 
+// 
+// for (int i=0;i<T;i++){
+// 	u[]=utab(0:Uh.ndof-1,i);
+// 	
+// 	/// Visualisation
+// 	//plot(u,fill=1,wait=1,value=1);
+// 	
+// 	/// Stockage
+// 	ofstream U ("Vitesses/"+maillage+"/"+schema+"/"+discr+"/"+pas+"/u/u"+i+".txt");
+// 
+// 	U<<u[];
+// 
+// }
+
+
+
+// cout<<"Rappel"<<endl<<"Maillage : "<<maillage<<" Schema : "<<schema<<endl<<" Pas de temps :"<<pas<<endl<<endl;
+

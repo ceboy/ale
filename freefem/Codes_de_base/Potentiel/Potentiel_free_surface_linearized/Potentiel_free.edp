@@ -1,0 +1,340 @@
+// Laplace
+
+
+///////////////////////////////////////////////////////////////////////////////////    Données
+verbosity = 1;
+
+real eps1 = 1.e-10;
+real mytgv = 1.e30;
+
+real rho = 1; real mu = 1.e-3;
+
+real g = 10;
+
+// Géomterie de la vague
+real Hwave = 0.1;
+real hwave = 3;
+real kwave = 3;
+real wwave = sqrt(g*kwave*tanh(kwave*hwave));
+real Twave = 2*pi/wwave;
+real Lwave = 2*pi/kwave;
+
+// Géometrie du maillage de référence
+real x0=0;
+real x1=3*Lwave;
+
+real y0=0;
+real y1=hwave;
+
+real t=0;
+
+
+///////////////////////////////////////////////////////////////////////////////////    Pas de temps
+real pas;
+real T;
+int mypas=0;
+while(mypas>16 || mypas<1){
+	cout<<"Choix du pas de temps : entre 1 et 16 du plus grossier au plus fin"<<endl;
+	cin>> mypas;
+}
+
+if (mypas==1){
+	pas=0.6;
+	T=10.;
+}
+if (mypas==2){
+	pas=0.5;
+	T=12.;
+}
+if (mypas==3){
+	pas=0.4;
+	T=15.;
+}
+if (mypas==4){
+	pas=0.3;
+	T=20.;
+}
+if (mypas==5){
+	pas=0.2;
+	T=30.;
+}
+if (mypas==6){
+	pas=0.15;
+	T=40.;
+}
+if (mypas==7){
+	pas=0.1;
+	T=60.;
+}
+if (mypas==8){
+	pas=0.06;
+	T=100.;
+}
+if (mypas==9){
+	pas=0.05;
+	T=120.;
+}
+if (mypas==10){
+	pas=0.04;
+	T=150.;
+}
+if (mypas==11){
+	pas=0.03;
+	T=200.;
+}
+if (mypas==12){
+	pas=0.02;
+	T=300.;
+}
+if (mypas==13){
+	pas=0.015;
+	T=400.;
+}
+if (mypas==14){
+	pas=0.01;
+	T=600.;
+}
+if (mypas==15){
+	pas=0.006;
+	T=1000.;
+}
+if (mypas==16){
+	pas=0.005;
+	T=1200.;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////    Maillage de référence
+int finesse=-1;
+int coef;
+while(finesse>19 || finesse<1){
+	cout<<"Choix du maillage : entre 1 et 16 du plus grossier au plus fin"<<endl;
+	cin>> finesse;
+}
+if (finesse==1){
+	coef=20;
+}
+if (finesse==2){
+	coef=25;
+}
+if (finesse==3){
+	coef=30;
+}
+if (finesse==4){
+	coef=35;
+}
+if (finesse==5){
+	coef=45;
+}
+if (finesse==6){
+	coef=50;
+}
+if (finesse==7){
+	coef=55;
+}
+if (finesse==8){
+	coef=60;
+}
+if (finesse==9){
+	coef=65;
+}
+if (finesse==10){
+	coef=70;
+}
+if (finesse==11){
+	coef=75;
+}
+if (finesse==12){
+	coef=80;
+}
+if (finesse==13){
+	coef=85;
+}
+if (finesse==14){
+	coef=90;
+}
+if (finesse==15){
+	coef=95;
+}
+if (finesse==16){
+	coef=100;
+}
+if (finesse==17){
+	coef=150;
+}
+if (finesse==18){
+	coef=200;
+}
+if (finesse==19){
+	coef=300;
+}
+
+mesh Th=square(coef,coef,[x0+(x1-x0)*x,y0+(y1-y0)*y],flags=3);
+// plot(Th);
+///////////////////////////////////////////////////////////////////////////////////    Formule variatonnelle
+varf mass(u,v) = int2d(Th)(u*v);
+
+varf rigidity(u,v) = int2d(Th)(dx(u)*dx(v)+dy(u)*dy(v));
+
+varf boundary(u,v) = on(1,3,u=1);
+
+varf boundary1(u,v) = on(1,u=1);
+
+varf boundary2(u,v) = on(2,u=1);
+
+varf boundary3(u,v) = on(3,u=1);
+
+varf boundary4(u,v) = on(4,u=1);
+
+varf SecMem(u,v) = int2d(Th)(0.*v);
+
+
+
+///////////////////////////////////////////////////////////////////////////////////    Discrétisation en espace
+
+/// Espaces de discrétisation
+string discr="P2";
+fespace Poth(Th,P2,periodic=[[2,y],[4,y]]);
+Poth phi,dphi,eta,phi1,dphi1,phiref,diff;
+
+
+fespace Uh(Th,P1dc,periodic=[[2,y],[4,y]]); 
+Uh u,v;
+
+/// Construction du problème linéaire
+
+matrix MASS = mass(Poth,Poth,tgv=mytgv);
+
+matrix RIGIDITY = rigidity(Poth,Poth,tgv=mytgv);
+
+matrix BOUNDARYPENALIZATION = boundary3(Poth,Poth,tgv=mytgv); 
+
+RIGIDITY=RIGIDITY+BOUNDARYPENALIZATION;
+
+real[int] BC(Poth.ndof),bc(Poth.ndof);
+
+
+///////////////////////////////////////////////////////////////////////////////////    Discrétisation en espace
+/// stockage erreurs
+
+real[int] erreurL2(T-1);
+real[int] erreurH1(T-1);
+real[int] energie(T-1);
+
+real normH1max=0;
+real normL2max=0;
+
+/// stockage des résultats
+real[int,int] pottab(Poth.ndof,T);
+
+
+for (int iter=0;iter<T;iter++){
+	
+	/// Mise à jour du temps
+	t+=pas;
+	cout<<"t : "<<t<<endl;
+	
+	if (iter==0){
+		phi=(pi*Hwave/Twave)*(cosh(kwave*(y))/sinh(kwave*hwave))*sin(kwave*x-wwave*t)*(1./kwave);
+		pottab(0:Poth.ndof-1,iter)=phi[];
+		eta=(Hwave/2)*cos(kwave*x-wwave*t);
+// 		plot(phi,wait=1,fill=1,cmm=iter);
+	}
+	else{
+		/// Construction du second membre
+		
+		phi[]=pottab(0:Poth.ndof-1,iter-1);
+		phi1[]=phi[];
+		phi1[]=phi1[]+(-1.)*g*pas*eta[];
+		
+		real[int] BOUNDARY3=boundary3(0,Poth);
+		bc(0:Poth.ndof-1)=mytgv*phi1[];
+		BC(0:Poth.ndof-1) = BOUNDARY3 ? bc : BC(0:Poth.ndof-1);
+
+
+		/// Résolution du problème linéaire
+		real[int] Pot(Poth.ndof);
+		set(RIGIDITY,eps=eps1,solver=UMFPACK);
+		Pot=RIGIDITY^-1*BC;
+
+		/// Post processing
+		
+		phi[]=Pot(0:Poth.ndof-1);
+		real moy=int2d(Th)(phi);
+		real [int] test(Poth.ndof);test=moy*(1./((x1-x0)*(y1-y0)));
+		phi[]=phi[]-test(0:Poth.ndof-1);
+		moy=int2d(Th)(phi);
+// 		cout<<moy<<endl;
+// 		plot(phi,wait=1,fill=1,cmm=iter,value=1);
+		phiref=(pi*Hwave/Twave)*(cosh(kwave*(y))/sinh(kwave*hwave))*sin(kwave*x-wwave*t)*(1./kwave);
+// 		plot(phiref,wait=1,fill=1,cmm=iter,value=1);
+		pottab(0:Poth.ndof-1,iter)=phi[];
+		u=dx(phi);
+		v=dy(phi);
+		plot(Th,[u,v],wait=1,boundary=0);
+		
+		dphi=dy(phi);
+		eta[]=eta[]+pas*dphi[];
+		
+		/// Calcul de l'erreur
+		phiref=(pi*Hwave/Twave)*(cosh(kwave*(y))/sinh(kwave*hwave))*sin(kwave*x-wwave*t)*(1./kwave);
+		diff[]=phi[]-phiref[];
+		erreurL2(iter-1)=sqrt(int2d(Th)(diff*diff));
+		erreurH1(iter-1)=sqrt(int2d(Th)(dx(diff)*dx(diff)+dy(diff)*dy(diff)));
+		real normL2=sqrt(int2d(Th)(phiref*phiref));
+		if (normL2max<normL2){
+			normL2max=normL2;
+		}
+		real normH1=sqrt(int2d(Th)(dx(phiref)*dx(phiref))+int2d(Th)(dy(phiref)*dy(phiref)));
+		if (normH1max<normH1){
+			normH1max=normH1;
+		}
+		/// Calcul de l'énergie
+		real E;
+		energie(iter-1)=(1./2.)*int2d(Th)(u*u+v*v)+(0.5)*int1d(Th,3)(eta);
+
+	}
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////    Visualisation et Sauvegarde des données
+Uh h=hTriangle;
+real[int] htab(Uh.ndof);
+htab(0:Uh.ndof-1)=h[];
+real hsum=htab.sum;
+real hnbr=htab.n;
+real H=hsum/hnbr;
+
+
+real erreurLinfL2=erreurL2.max/normL2max;
+real erreurL2H1=sqrt(erreurH1'*erreurH1)/normH1max;
+
+// exec("mkdir "+"Gnuplot");
+// exec("mkdir "+"Gnuplot/Espace");
+// ofstream ErreurLinfL2("Gnuplot/Espace/convergence_"+discr+"_"+pas+"_LinfL2.gp",append);
+// ofstream ErreurL2H1("Gnuplot/Espace/convergence_"+discr+"_"+pas+"_L2H1.gp",append);
+// ErreurLinfL2<<H<<" "<<erreurLinfL2<<endl;
+// ErreurL2H1<<H<<" "<<erreurL2H1<<endl;
+
+// exec("mkdir "+"Gnuplot/Temps");
+// ofstream ErreurLinfL2("Gnuplot/Temps/convergence_"+finesse+"_"+schema+"_"+discr+"_LinfL2.gp",append);
+// ofstream ErreurL2H1("Gnuplot/Temps/convergence_"+finesse+"_"+schema+"_"+discr+"_L2H1.gp",append);
+// ErreurLinfL2<<pas<<" "<<erreurLinfL2<<endl;
+// ErreurL2H1<<pas<<" "<<erreurL2H1<<endl;
+
+
+
+// exec("mkdir "+"Gnuplot/");
+// ofstream ErreurL2("Gnuplot/convergence_"+finesse+"_"+pas+"_"+discr+"_L2.gp",append);
+// ofstream ErreurH1("Gnuplot/convergence_"+finesse+"_"+pas+"_"+discr+"_H1.gp",append);
+// ofstream Energie("Gnuplot/convergence_"+finesse+"_"+pas+"_"+discr+"_E.gp",append);
+// for (int i=0;i<T-1;i++){
+// // 	ErreurL2<<i*pas<<" "<<erreurL2(i)<<endl;
+// // 	ErreurH1<<i*pas<<" "<<erreurH1(i)<<endl;
+// 	Energie<<i*pas<<" "<<energie(i)<<endl;
+// }
+
+
+cout<<"Rappel"<<endl<<"Maillage : "<<finesse<<" Pas de temps :"<<pas<<endl<<endl;

@@ -1,0 +1,197 @@
+// Stokes
+
+
+///////////////////////////////////////////////////////////////////////////////////    Données
+verbosity = 2;
+
+real eps1 = 1.e-10;
+real mytgv = 1.e30;
+
+// Solution analytique pour un carré seulement
+func fx = pi^2*sin(y*pi)*(1./2.+cos(x*pi));
+func fy = -pi^2*sin(x*pi)*(1./2.+cos(y*pi));
+
+
+func uana = sin(y*pi)*(1+cos(x*pi))/2; 
+func vana = -sin(x*pi)*(1+cos(y*pi))/2; 
+func pana =1;
+
+
+///////////////////////////////////////////////////////////////////////////////////    Maillage
+int finesse;
+string maillage;
+mesh Th;
+
+while(finesse!=2 & finesse!=3 & finesse!=4 & finesse!=5){
+	cout<<"Choix du maillage : 2 grossier, 3 moyen, 4 fin, 5 ref"<<endl;
+	cin>> finesse;
+}
+
+if (finesse==2){
+	maillage="grossier";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carregrossier.msh"); 
+}
+if (finesse==3){
+	maillage="moyen";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carremoyen.msh"); 
+}
+if (finesse==4){
+	maillage="fin";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carrefin.msh"); 
+}
+if (finesse==5){
+	maillage="ref";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carreref.msh"); 
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////    Formule variatonnelle
+varf mass(u,v) = int2d(Th)(u*v);
+
+varf rigidity(u,v) = int2d(Th)(dx(u)*dx(v)+dy(u)*dy(v));
+
+varf divergenceX(u,v) = -int2d(Th)(u*dx(v));
+
+varf divergenceY(u,v) = -int2d(Th)(u*dy(v));
+
+varf boundary(u,v) = on(1,2,3,4,u=1);
+
+varf boundaryentree(u,v) = on(4,u=1);
+
+varf boundarysortie(u,v) = on(1,u=1);
+
+varf boundaryautres(u,v) = on(2,3,u=1);
+
+varf SecMemx(u,v) = int2d(Th)(fx*v);
+
+varf SecMemy(u,v) = int2d(Th)(fy*v);
+
+varf SecMemp(u,v) = int2d(Th)(0*v);
+
+varf pmass(p,q) = int2d(Th)(p*q);
+
+///////////////////////////////////////////////////////////////////////////////////    Discrétisation
+
+/// Espaces de discrétisation
+
+string discr = "P1b";
+fespace Uh(Th,P1b); Uh u,v,a,b;
+fespace Ph(Th,P1); Ph p,q;
+
+
+/// Construction de la matrice à inverser
+
+
+
+matrix RIGIDITY = rigidity(Uh,Uh,tgv=mytgv);
+
+matrix Bx = divergenceX(Ph,Uh,tgv=mytgv);
+
+matrix By = divergenceY(Ph,Uh,tgv=mytgv);
+
+matrix ZEROCARRE = 0*RIGIDITY;
+matrix ZERORECTD = 0*Bx;
+matrix ZERORECTG = 0*Bx';
+matrix ZEROCARREf = ZERORECTG*ZERORECTD;
+
+matrix PMASS = pmass(Ph,Ph,tgv=mytgv);
+
+matrix ZEROCARREF = 1e-6*PMASS;
+
+matrix BOUNDARYPENALIZATIONx = boundary(Uh,Uh,tgv=mytgv); 
+cout<<"BOUNDARYPENALIZATIONx m : "<<( BOUNDARYPENALIZATIONx).m<<" n : "<<( BOUNDARYPENALIZATIONx).n<<endl;
+
+matrix BOUNDARYPENALIZATION = [[BOUNDARYPENALIZATIONx,ZEROCARRE,ZERORECTD],[ZEROCARRE,BOUNDARYPENALIZATIONx,ZERORECTD],[ZERORECTG,ZERORECTG,ZEROCARREF]]; 
+
+
+matrix PROBLIN=[[RIGIDITY,ZEROCARRE,Bx],[ZEROCARRE,RIGIDITY,By],[Bx',By',ZEROCARREF]];
+matrix STOKES=PROBLIN+BOUNDARYPENALIZATION;
+
+
+//set(STOKES,eps=eps1,solver=GMRES,tgv=mytgv,dimKrylov=800);
+//set(STOKES,eps=eps1,solver=GMRES,tgv=mytgv,nbiter=10000);
+set(STOKES,eps=eps1,solver=UMFPACK);
+
+/// Construction du second membre avec penalisation
+
+Uh secx,secy;
+Ph secp;
+
+int taille=2*Uh.ndof+Ph.ndof;
+real[int] F(taille),U(taille),BCx(Uh.ndof),BCy(Uh.ndof),Fx(Uh.ndof),Fy(Uh.ndof),Fp(Ph.ndof);
+
+secx[] = SecMemx(0,Uh,tgv=mytgv);
+secy[] = SecMemy(0,Uh,tgv=mytgv);
+secp[] = SecMemp(0,Ph,tgv=mytgv);;
+
+Fx=secx[];
+Fy=secy[];
+Fp=secp[];
+
+u=sin(pi*y);
+v=-sin(pi*x);
+BCx=mytgv*u[];
+BCy=mytgv*v[];
+
+
+real[int] BOUNDARYENTREE = boundaryentree(0,Uh);
+
+real[int] BOUNDARYSORTIE = boundarysortie(0,Uh);
+
+real[int] BOUNDARYAUTRES = boundaryautres(0,Uh);
+
+real[int] ZERO(Uh.ndof); 
+ZERO = 0*Fx;
+
+Fx = BOUNDARYENTREE ? BCx : Fx;
+Fx = BOUNDARYSORTIE ? ZERO : Fx;
+Fx = BOUNDARYAUTRES ? ZERO : Fx;
+
+Fy = BOUNDARYENTREE ? ZERO : Fy;
+Fy = BOUNDARYSORTIE ? BCy : Fy;
+Fy = BOUNDARYAUTRES ? ZERO : Fy;
+
+F=[Fx,Fy,Fp];
+//cout<<Fx(1)<<" "<<Fy.n<<" "<<Fp.n<<endl;
+
+U=STOKES^-1*F;
+
+u[]=U(0:Uh.ndof-1);
+v[]=U(Uh.ndof:2*Uh.ndof-1);
+p[]=U(2*Uh.ndof:2*Uh.ndof+Ph.ndof-1);
+//plot([u,v],fill=1,wait=1);
+
+real[int] myres(U.n);
+myres = STOKES*U;
+myres += (-1.)*F;
+cout << myres.linfty << endl;
+cout << myres(0:Uh.ndof-1).linfty << endl;
+cout << myres(Uh.ndof:2*Uh.ndof-1).linfty << endl;
+cout << myres(2*Uh.ndof:2*Uh.ndof+Ph.ndof-1).linfty << endl;
+plot(p,fill=1,wait=1,value=1);
+
+///////////////////////////////////////////////////////////////////////////////////    Visualisation et Sauvegarde des données
+
+/// Création des divers dossiers de stockage
+exec("mkdir "+"Resultats_"+maillage);
+exec("mkdir "+"Resultats_"+maillage+"/"+discr);
+	
+/// Visualisation
+//plot([u,v],fill=0,wait=1);
+
+/// Stockage
+ofstream Ufile ("Resultats_"+maillage+"/"+discr+"/u.txt");
+ofstream Vfile ("Resultats_"+maillage+"/"+discr+"/v.txt");
+ofstream Pfile ("Resultats_"+maillage+"/"+discr+"/p.txt");
+Ufile<<u[];
+Vfile<<v[];
+Pfile<<p[];
+
+
+
+cout<<"Rappel"<<endl<<endl<<"Maillage : "<<maillage<<endl;
+

@@ -1,0 +1,20 @@
+############ Gnuplot
+
+set title 'Erreur LinfL2 en espace pour EI'
+set autoscale
+set xlabel 'log(h)'
+set ylabel 'log(erreur)'
+
+set autoscale
+
+plot 'convergence_EI_P1b_0.002_LinfL2.gp' u (log($1)):(log($2)) w line t 'P1b'
+
+replot 'convergence_EI_P2_0.002_LinfL2.gp' u (log($1)):(log($2)) w line t 'P2'
+
+replot x-4 w line t 'ordre 1'
+
+replot 2*x-3 w line t 'ordre 2'
+set term postscript enhanced color
+set output "convergence_EI_LinfL2.eps"
+replot
+unset output

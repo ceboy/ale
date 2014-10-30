@@ -1,0 +1,597 @@
+// Moving Stokes with given movement
+
+
+///////////////////////////////////////////////////////////////////////////////////    Données
+verbosity = 0;
+
+real eps1 = 1.e-10;
+real mytgv = 1.e30;
+
+real rho = 1000; real mu = 1.e-3;
+
+real g = 10;
+
+// Géomterie de la vague
+real Hwave = 0.1;
+real hwave = 3;
+real kwave = 3;
+real wwave = sqrt(g*kwave*tanh(kwave*hwave));
+real Twave = 2*pi/wwave;
+real Lwave = 2*pi/kwave;
+
+// Force
+
+func fvolx = 0.;
+func fvoly = -g;
+
+
+
+// Géometrie du maillage de référence
+real x0=0;
+real x1=2*pi;
+
+real y0=0;
+real y1=hwave;
+
+/////////////////////////////////////////////////////////////////////////////////// Point de vue
+int conv=-1;
+while (conv!=1 & conv!=2){
+	cout<<"Choix du type de convergence : 1 espace et 2 temps"<<endl;
+	cin>>conv;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////    Pas de temps
+real pas;
+real T;
+int mypas=0;
+if (conv==2){
+	while(mypas>16 || mypas<1){
+		cout<<"Choix du pas de temps : entre 1 et 16 du plus grossier au plus fin"<<endl;
+		cin>> mypas;
+	}
+}
+else{
+	mypas=16;
+}
+if (mypas==1){
+	pas=0.6;
+	T=10.;
+}
+if (mypas==2){
+	pas=0.5;
+	T=12.;
+}
+if (mypas==3){
+	pas=0.4;
+	T=15.;
+}
+if (mypas==4){
+	pas=0.3;
+	T=20.;
+}
+if (mypas==5){
+	pas=0.2;
+	T=30.;
+}
+if (mypas==6){
+	pas=0.15;
+	T=40.;
+}
+if (mypas==7){
+	pas=0.1;
+	T=60.;
+}
+if (mypas==8){
+	pas=0.06;
+	T=100.;
+}
+if (mypas==9){
+	pas=0.05;
+	T=120.;
+}
+if (mypas==10){
+	pas=0.04;
+	T=150.;
+}
+if (mypas==11){
+	pas=0.03;
+	T=200.;
+}
+if (mypas==12){
+	pas=0.02;
+	T=300.;
+}
+if (mypas==13){
+	pas=0.015;
+	T=400.;
+}
+if (mypas==14){
+	pas=0.01;
+	T=600.;
+}
+if (mypas==15){
+	pas=0.006;
+	T=1000.;
+}
+if (mypas==16){
+	pas=0.005;
+	T=1200.;
+}
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////    Maillage de référence
+int finesse;
+int coef;
+if (conv==1){
+	while(finesse>16 || finesse<1){
+		cout<<"Choix du maillage : entre 1 et 16 du plus grossier au plus fin"<<endl;
+		cin>> finesse;
+}
+}else{
+	finesse=16;
+}
+if (finesse==1){
+	coef=20;
+}
+if (finesse==2){
+	coef=25;
+}
+if (finesse==3){
+	coef=30;
+}
+if (finesse==4){
+	coef=35;
+}
+if (finesse==5){
+	coef=45;
+}
+if (finesse==6){
+	coef=50;
+}
+if (finesse==7){
+	coef=55;
+}
+if (finesse==8){
+	coef=60;
+}
+if (finesse==9){
+	coef=65;
+}
+if (finesse==10){
+	coef=70;
+}
+if (finesse==11){
+	coef=75;
+}
+if (finesse==12){
+	coef=80;
+}
+if (finesse==13){
+	coef=85;
+}
+if (finesse==14){
+	coef=90;
+}
+if (finesse==15){
+	coef=95;
+}
+if (finesse==16){
+	coef=100;
+}
+
+mesh Th0=square(coef,coef,[x0+(x1-x0)*x,y0+(y1-y0)*y]);
+/*plot(Th0);*/
+
+mesh Th=Th0;
+
+mesh Th0ref=square(100,100,[x0+(x1-x0)*x,y0+(y1-y0)*y]);
+
+mesh Thref=Th0ref;
+///////////////////////////////////////////////////////////////////////////////////     Choix schéma
+string schema="none";
+int type=-1;
+while (type!=0 & type!=1 & type!=2 & type!=3){
+	cout<<"Choix du schema : Euler Implicite 1 ou Crank Nicolson 2 ou BDF2 3"<<endl;
+	cin>>type;
+}
+
+cout<<pas<<" "<<finesse<<endl;;
+
+
+///////////////////////////////////////////////////////////////////////////////////    Discrétisation en espace
+
+// Vitesse du maillage
+fespace Dh(Th,P2,periodic=[[2,y],[4,y]]);
+Dh eta0,eta1,umesh,translation, dxeta0,dyeta0,nx,ny;
+
+// Vitesse du fluide
+string discr="P2";
+fespace Uh(Th,P2,periodic=[[2,y],[4,y]]); 
+Uh u,v,u0,v0;
+
+// Pression
+fespace Ph(Th,P1,periodic=[[2,y],[4,y]]);
+Ph p,p0;
+
+// Vitesse du maillage ref
+fespace Dhref(Thref,P2,periodic=[[2,y],[4,y]]);
+Dhref eta0ref,eta1ref,umeshref,translationref;
+
+// Vitesse du fluide ref
+fespace Uhref(Thref,P2,periodic=[[2,y],[4,y]]); 
+Uhref uref,vref,u0ref,v0ref,diffx,diffy;
+
+// Pression ref
+fespace Phref(Thref,P1,periodic=[[2,y],[4,y]]);
+Phref pref,p0ref;
+
+// Normale
+// fespace Nh(Th,P1,periodic=[[2,y],[4,y]]);
+// Nh nx,ny;
+
+int taille=2*Uh.ndof+Ph.ndof;
+
+int tailleref=2*Uhref.ndof+Phref.ndof;
+
+
+
+real[int] ut(Uh.ndof),vt(Uh.ndof),pt(Ph.ndof);
+
+real[int] utref(Uhref.ndof),vtref(Uhref.ndof),ptref(Phref.ndof);
+///////////////////////////////////////////////////////////////////////////////////  Boucle en temps
+
+
+/// Initialisation
+real[int] erreurL2(T-1);
+real normL2max=0;
+real[int] erreurH1(T-1);
+real normH1max=0;
+
+real t=0;
+cout<<"t : "<<t<<endl;
+eta0 = (Hwave/2)*cos(kwave*x-wwave*t)*(y/hwave);
+eta0ref = (Hwave/2)*cos(kwave*x-wwave*t)*(y/hwave);
+
+
+real[int] temp1(eta0[].n);
+real[int] temp2(umesh[].n);
+real[int] temp3(eta0ref[].n);
+real[int] temp4(umeshref[].n);
+
+temp1 = eta0[];
+temp3 = eta0ref[];
+
+/// Déformation du maillage
+translation = y;
+translation[] += eta0[];
+Th=movemesh(Th,[x,translation]);
+
+translationref = y;
+translationref[] += eta0ref[];
+Thref=movemesh(Thref,[x,translationref]);
+
+
+// plot(Th,wait=1);
+// plot(Thref,wait=1);
+
+eta0 = 0;
+umesh = 0;
+eta0ref = 0;
+umeshref = 0;
+
+umesh = wwave*(Hwave/2)*sin(kwave*x-wwave*t)*(y/hwave);
+umeshref = wwave*(Hwave/2)*sin(kwave*x-wwave*t)*(y/hwave);
+
+
+temp2=umesh[];
+temp4=umeshref[];
+
+
+
+// Boucle
+
+for (int iter=1;iter<T;iter++){
+	///////////////////////// Sauvegarde Paraview
+	
+	///////////////////////// Mise à jour du temps
+	t+=pas;
+	cout<<"t : "<<t<<endl;
+	
+	
+	///////////////////////// Déformation du maillage
+
+	
+	/// Retour au carré
+	eta0[]=temp1;
+	translation = y; translation[] -= eta0[];
+	Th = movemesh(Th,[x,translation]); 
+	//plot(Th,wait=1,cmm="ancien maillage");
+	
+	eta0ref[]=temp3;
+	translationref = y; translationref[] -= eta0ref[];
+	Thref = movemesh(Thref,[x,translationref]); 
+	//plot(Thref,wait=1,cmm="ancien maillage");
+	
+	eta0 = 0;
+	umesh = 0;
+	eta0ref = 0;
+	umeshref = 0;
+	
+	eta0[] = temp1;
+	umesh[] = temp2;
+	eta0ref[] = temp3;
+	umeshref[] = temp4;	
+	
+	/// Déformation finale
+	eta1=0.;
+	eta1 = (Hwave/2)*cos(kwave*x-wwave*t)*(y/hwave);
+	eta1ref=0.;
+	eta1ref = (Hwave/2)*cos(kwave*x-wwave*t)*(y/hwave);
+	
+	
+	translation=y;
+	translation[]+=eta1[];
+	Th=movemesh(Th,[x,translation]); 
+// 	plot(Th,wait=1,cmm="nouveau maillage");
+	
+	translationref=y;
+	translationref[]+=eta1ref[];
+	Thref=movemesh(Thref,[x,translationref]); 
+// 	plot(Thref,wait=1,cmm="nouveau maillage");
+	
+	
+	eta0 = 0;
+	umesh = 0;
+	eta0ref = 0;
+	umeshref = 0;
+
+	eta0[]=eta1[];
+	umesh[] = temp2;
+	umesh = wwave*(Hwave/2)*sin(kwave*x-wwave*t)*(y/hwave);
+	eta0ref[]=eta1ref[];
+	umeshref[] = temp4;
+	umeshref = wwave*(Hwave/2)*sin(kwave*x-wwave*t)*(y/hwave);	
+	///////////////////////// Stokes
+	
+
+	/// Théorie linéaire
+	if (type==0){
+		schema="Vague lineaire";
+		u = (pi*Hwave/Twave)*(cosh(kwave*(y))/sinh(kwave*hwave))*cos(kwave*x-wwave*t); 
+		v = (pi*Hwave/Twave)*(sinh(kwave*(y))/sinh(kwave*hwave))*sin(kwave*x-wwave*t);
+		p = -rho*g*(y-hwave) + rho*(g*Hwave/2)*(cosh(kwave*(y))/cosh(kwave*hwave))*cos(kwave*x-wwave*t);
+
+	}
+
+	/// Euler Implicite
+	if (type==1){
+		schema="EI";
+		
+		
+		/// Chargement vitesse
+		u=0.;
+		v=0.;
+		p=0.;
+		ifstream U("Reference/"+finesse+"/"+schema+"/"+discr+"/"+pas+"/u/u"+t+".gp");
+		ifstream V("Reference/"+finesse+"/"+schema+"/"+discr+"/"+pas+"/v/v"+t+".gp");
+		ifstream P("Reference/"+finesse+"/"+schema+"/"+discr+"/"+pas+"/p/p"+t+".gp");
+		U>>ut;
+		V>>vt;
+		P>>pt;
+		u[]=ut;
+		v[]=vt;
+		p[]=pt;
+		
+// 		if (conv==1){
+// 			/// Chargement vitesse ref
+// 			uref=0.;
+// 			vref=0.;
+// 			pref=0.;
+// 			ifstream Uref("Reference/"+16+"/"+schema+"/"+discr+"/"+pas+"/u/u"+t+".gp");
+// 			ifstream Vref("Reference/"+16+"/"+schema+"/"+discr+"/"+pas+"/v/v"+t+".gp");
+// 			ifstream Pref("Reference/"+16+"/"+schema+"/"+discr+"/"+pas+"/p/p"+t+".gp");
+// 			Uref>>utref;
+// 			Vref>>vtref;
+// 			Pref>>ptref;
+// 			uref[]=utref;
+// 			vref[]=vtref;
+// 			pref[]=ptref;
+// 		}
+// 		
+// 		if (conv==2){
+// 			/// Chargement vitesse ref
+// 			uref=0.;
+// 			vref=0.;
+// 			pref=0.;
+// 			ifstream Uref("Reference/"+finesse+"/"+schema+"/"+discr+"/"+0.005+"/u/u"+t+".gp");
+// 			ifstream Vref("Reference/"+finesse+"/"+schema+"/"+discr+"/"+0.005+"/v/v"+t+".gp");
+// 			ifstream Pref("Reference/"+finesse+"/"+schema+"/"+discr+"/"+0.005+"/p/p"+t+".gp");
+// 			Uref>>utref;
+// 			Vref>>vtref;
+// 			Pref>>ptref;
+// 			uref[]=utref;
+// 			vref[]=vtref;
+// 			pref[]=ptref;
+// 		}
+		
+	}
+	
+	/// Crank Nicolson
+	if (type==2){
+		schema="CN";
+		
+		/// Chargement vitesse
+		u=0.;
+		v=0.;
+		p=0.;
+		ifstream U("Reference/"+finesse+"/"+schema+"/"+discr+"/"+pas+"/u/u"+t+".gp");
+		ifstream V("Reference/"+finesse+"/"+schema+"/"+discr+"/"+pas+"/v/v"+t+".gp");
+		ifstream P("Reference/"+finesse+"/"+schema+"/"+discr+"/"+pas+"/p/p"+t+".gp");
+		U>>ut;
+		V>>vt;
+		P>>pt;
+		u[]=ut;
+		v[]=vt;
+		p[]=pt;
+		
+// 		if (conv==1){
+// 			/// Chargement vitesse ref
+// 			uref=0.;
+// 			vref=0.;
+// 			pref=0.;
+// 			ifstream Uref("Reference/"+16+"/"+schema+"/"+discr+"/"+pas+"/u/u"+t+".gp");
+// 			ifstream Vref("Reference/"+16+"/"+schema+"/"+discr+"/"+pas+"/v/v"+t+".gp");
+// 			ifstream Pref("Reference/"+16+"/"+schema+"/"+discr+"/"+pas+"/p/p"+t+".gp");
+// 			Uref>>utref;
+// 			Vref>>vtref;
+// 			Pref>>ptref;
+// 			uref[]=utref;
+// 			vref[]=vtref;
+// 			pref[]=ptref;
+// 		}
+// 		
+// 		if (conv==2){
+// 			/// Chargement vitesse ref
+// 			uref=0.;
+// 			vref=0.;
+// 			pref=0.;
+// 			ifstream Uref("Reference/"+finesse+"/"+schema+"/"+discr+"/"+0.005+"/u/u"+t+".gp");
+// 			ifstream Vref("Reference/"+finesse+"/"+schema+"/"+discr+"/"+0.005+"/v/v"+t+".gp");
+// 			ifstream Pref("Reference/"+finesse+"/"+schema+"/"+discr+"/"+0.005+"/p/p"+t+".gp");
+// 			Uref>>utref;
+// 			Vref>>vtref;
+// 			Pref>>ptref;
+// 			uref[]=utref;
+// 			vref[]=vtref;
+// 			pref[]=ptref;
+// 		}
+	}
+	
+	/// BDF2
+	if (type==3){
+		schema="BDF2";
+		/// Chargement vitesse
+		u=0.;
+		v=0.;
+		p=0.;
+		ifstream U("Reference/"+finesse+"/"+schema+"/"+discr+"/"+pas+"/u/u"+t+".gp");
+		ifstream V("Reference/"+finesse+"/"+schema+"/"+discr+"/"+pas+"/v/v"+t+".gp");
+		ifstream P("Reference/"+finesse+"/"+schema+"/"+discr+"/"+pas+"/p/p"+t+".gp");
+		U>>ut;
+		V>>vt;
+		P>>pt;
+		u[]=ut;
+		v[]=vt;
+		p[]=pt;
+		
+		if (conv==1){
+			/// Chargement vitesse ref
+			uref=0.;
+			vref=0.;
+			pref=0.;
+			ifstream Uref("Reference/"+16+"/"+schema+"/"+discr+"/"+pas+"/u/u"+t+".gp");
+			ifstream Vref("Reference/"+16+"/"+schema+"/"+discr+"/"+pas+"/v/v"+t+".gp");
+			ifstream Pref("Reference/"+16+"/"+schema+"/"+discr+"/"+pas+"/p/p"+t+".gp");
+			Uref>>utref;
+			Vref>>vtref;
+			Pref>>ptref;
+			uref[]=utref;
+			vref[]=vtref;
+			pref[]=ptref;
+		}
+		
+		if (conv==2){
+			/// Chargement vitesse ref
+			uref=0.;
+			vref=0.;
+			pref=0.;
+			ifstream Uref("Reference/"+finesse+"/"+schema+"/"+discr+"/"+0.005+"/u/u"+t+".gp");
+			ifstream Vref("Reference/"+finesse+"/"+schema+"/"+discr+"/"+0.005+"/v/v"+t+".gp");
+			ifstream Pref("Reference/"+finesse+"/"+schema+"/"+discr+"/"+0.005+"/p/p"+t+".gp");
+			Uref>>utref;
+			Vref>>vtref;
+			Pref>>ptref;
+			uref[]=utref;
+			vref[]=vtref;
+			pref[]=ptref;
+		}
+			
+	}
+	
+	///////////////////////// Visualisation
+
+// 	plot(Th,[u,v],wait=1,value=1);
+
+// 	plot(Th,[uref,vref],wait=1,value=1,cmm="reference");
+
+	///////////////////////// Calcul erreur
+
+	u0=0.;
+	v0=0.;
+	u0ref=0.;
+	v0ref=0.;
+	diffx=0.;
+	diffy=0.;
+	
+	u0[]=u[];
+	v0[]=v[];
+	u0ref[]=uref[];
+	v0ref[]=vref[];
+	diffx=u0ref-u0;
+	diffy=v0ref-v0;
+	
+	erreurL2(iter-1)=sqrt(int2d(Th0ref)(diffx*diffx)+int2d(Th0ref)(diffy*diffy));
+	erreurH1(iter-1)=sqrt(int2d(Th0ref)((dx(diffx))*(dx(diffx)))+int2d(Th0ref)(dy(diffx)*dy(diffx))+int2d(Th0ref)((dx(diffy))*(dx(diffy)))+int2d(Th)(dy(diffy)*dy(diffy)));
+	cout<<erreurL2(iter-1)<<endl;
+	real normL2=sqrt(int2d(Th0ref)(u0ref*u0ref)+int2d(Th0ref)(v0ref*v0ref));
+	if (normL2max<normL2){
+		normL2max=normL2;
+	}
+	real normH1=sqrt(int2d(Th0ref)(dx(u0ref)*dx(u0ref))+int2d(Th0ref)(dy(u0ref)*dy(u0ref))+int2d(Th0ref)(dx(v0ref)*dx(v0ref))+int2d(Th0ref)(dy(v0ref)*dy(v0ref)));
+	if (normH1max<normH1){
+		normH1max=normH1;
+	}
+	
+	///////////////////////// Sauvegarde avant déformation du maillage
+	temp1=eta0[];
+	temp2=umesh[];
+	temp3=eta0ref[];
+	temp4=umeshref[];
+}
+
+
+///////////////////////// Traitement des erreurs
+Uh h=hTriangle;
+real[int] htab(Uh.ndof);
+htab(0:Uh.ndof-1)=h[];
+real hsum=htab.sum;
+real hnbr=htab.n;
+real H=hsum/hnbr;
+
+
+real erreurLinfL2=erreurL2.max/normL2max;
+real erreurL2H1=sqrt(erreurH1'*erreurH1)/normH1max;
+exec("mkdir "+"Gnuplot");
+
+cout<<normL2max<<endl;
+cout<<erreurLinfL2<<endl;
+if (conv==1){
+	exec("mkdir "+"Gnuplot/Espace");
+	ofstream ErreurLinfL2("Gnuplot/Espace/convergence_"+schema+"_"+discr+"_"+pas+"_LinfL2.gp",append);
+	ofstream ErreurL2H1("Gnuplot/Espace/convergence_"+schema+"_"+discr+"_"+pas+"_L2H1.gp",append);
+	ErreurLinfL2<<H<<" "<<erreurLinfL2<<endl;
+	ErreurL2H1<<H<<" "<<erreurL2H1<<endl;
+}
+if (conv==2){
+	exec("mkdir "+"Gnuplot/Temps");
+	ofstream ErreurLinfL2("Gnuplot/Temps/convergence_"+finesse+"_"+schema+"_"+discr+"_LinfL2.gp",append);
+	ofstream ErreurL2H1("Gnuplot/Temps/convergence_"+finesse+"_"+schema+"_"+discr+"_L2H1.gp",append);
+	ErreurLinfL2<<pas<<" "<<erreurLinfL2<<endl;
+	ErreurL2H1<<pas<<" "<<erreurL2H1<<endl;
+}
+cout<<endl<<"Rappel"<<endl<<endl<<"Maillage : "<<finesse<<endl<<"Schema : "<<schema<<endl<<"Pas de temps : "<<pas<<endl<<"Discretisation : "<<discr<endl;
+
+

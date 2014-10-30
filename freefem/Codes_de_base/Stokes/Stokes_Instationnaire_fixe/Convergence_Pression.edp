@@ -1,0 +1,255 @@
+
+///////////////////////////////////////////////////////////////////////////////////    Pas de temps
+real pas;
+real T;
+int mypas;
+while(mypas!=2 & mypas!=3 & mypas!=4 & mypas!=5 ){
+	cout<<"Choix du pas de temps : 2 grossier, 3 moyen, 4 fin"<<endl;
+	cin>> mypas;
+}
+
+if (mypas==2){
+	pas=0.1;
+	T=20;
+}
+if (mypas==3){
+	pas=0.05;
+	T=40.;
+}
+if (mypas==4){
+	pas=0.01;
+	T=200.;
+}
+
+if (mypas==5){
+	pas=0.005;
+	T=400.;
+}
+
+/////////////////////////////////////////////////////////////////////////////////// données
+real t=0;
+
+///////////////////////////////////////////////////////////////////////////////////    Maillage
+int finesse;
+string maillage;
+mesh Th;
+
+while(finesse!=2 & finesse!=3 & finesse!=4 & finesse!=5){
+	cout<<"Choix du maillage : 2 grossier, 3 moyen, 4 fin"<<endl;
+	cin>> finesse;
+}
+
+cout<<endl<<"Maillage choisi : ";
+if (finesse==2){
+	maillage="grossier";
+	cout<<maillage<<endl<<endl;
+
+	Th=readmesh("Carregrossier.msh"); 
+}
+if (finesse==3){
+	maillage="moyen";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carremoyen.msh"); 
+}
+if (finesse==4){
+	maillage="fin";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carrefin.msh"); 
+}
+if (finesse==5){
+	maillage="ref";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carreref.msh"); 
+}
+
+mesh Thref=readmesh("Carreref.msh"); 
+
+
+/////////////////////////////////////////////////////////////////////////////////// Schéma
+string schema;
+int type;
+while (type!=1 & type!=2 & type!=3){
+	cout<<"Choix du schema : Euler Implicite 1 ou Crank Nicolson 2 ou BDF2 3"<<endl;
+	cin>>type;
+}
+if (type==1){
+	schema="EI";
+}
+if (type==2){
+	schema="CN";
+}
+if (type==3){
+	schema="BDF2";
+}
+///////////////////////////////////////////////////////////////////////////////////   Espace de discretisation
+
+string discr="P2";
+fespace Uh(Th,P2);
+fespace Ph(Th,P1);
+
+
+fespace Uhref(Thref,P2);
+fespace Phref(Thref,P1);
+
+
+
+///////////////////////////////////////////////////////////////////////////////////   Macros
+
+
+macro normeL2(u) (sqrt(int2d(Thref)(u*u))) //
+macro normeH1(u) (sqrt(int2d(Thref)(dx(u)*dx(u))+int2d(Thref)(dy(u)*dy(u)))) //
+
+///////////////////////////////////////////////////////////////////////////////////    Chargement des données
+
+// Stockage
+
+real[int,int] ptab(Ph.ndof,T);
+
+real[int,int] ptabref(Phref.ndof,T);
+
+Ph p;
+Phref pref;
+
+// Chargement des vitesses
+for (int i=0;i<T;i++){
+	ifstream Pr("Vitesses/"+maillage+"/"+schema+"/"+discr+"/"+pas+"/p/p"+i+".txt");
+	Pr>>p[];
+	ptab(0:Ph.ndof-1,i)=p[];
+
+}
+
+cout<<"Pressions chargees"<<endl;
+
+// Chargement des vitesses de reférence
+// for (int i=0;i<T;i++){
+// 	ifstream Pref("Vitesses/ref/"+schema+"/"+discr+"/"+pas+"/p/p"+i+".txt");
+// 	Pref>>pref[];
+// 	//cout<<pref[]<<endl;
+// 	ptabref(0:Phref.ndof-1,i)=pref[];
+// }
+// 
+// cout<<"Pressions de reference chargees"<<endl;
+
+
+
+///////////////////////////////////////////////////////////////////////////////////    Calculs des erreurs
+
+real[int] erreurL2(T);
+real absL2=0;
+
+
+t-=pas;
+for (int i=0;i<T;i++){
+	t+=pas;
+	
+	
+	//cout<<test<<endl;
+	p[]=ptab(0:Ph.ndof-1,i);
+
+// 	pref[]=ptabref(0:Ph.ndof-1,i);
+
+	pref = 0.; 
+
+	real normL2=normeL2(pref);
+
+	pref=pref-p;
+
+	erreurL2(i)=normeL2(pref);
+
+
+	
+	cout<<"erreurL2 "<<i<<" "<<erreurL2(i)<<endl;
+
+	if (absL2<normL2){
+		absL2=normL2;
+	}
+
+}
+ 
+real erreurL2f=sqrt(erreurL2'*erreurL2);
+
+cout<<"erreur L2 : "<<erreurL2f<<endl;
+
+///////////////////////////////////////////////////////////////////////////////////    Calcul de h
+
+// Ph h=hTriangle;
+// real[int] htab(Ph.ndof);
+// htab(0:Ph.ndof-1)=h[];
+// real hsum=htab.sum;
+// real hnbr=htab.n;
+// real H=hsum/hnbr;
+// cout<<H<<endl;
+
+
+///////////////////////////////////////////////////////////////////////////////////    Sauvegarde pour gnuplot
+
+exec("mkdir "+"Gnuplot/");
+exec("mkdir "+"Gnuplot/Pression");
+
+
+string name="Gnuplot/Pression/convergence_"+maillage+"_"+schema+" "+discr;
+ofstream ffL2(name+"L2.gp",append);
+
+ffL2 << pas << "  "  << erreurL2f<< endl;
+
+
+
+string namef="Gnuplot/Pression/convergence_finale_"+maillage+"_"+schema+"_"+discr;
+ofstream fffL2(namef+"L2.gp",append);
+fffL2 << pas << "  "  << erreurL2(T-1)<< endl;
+
+// exec("mkdir "+"Erreurs/");
+// exec("mkdir "+"Erreurs/"+maillage);
+// exec("mkdir "+"Erreurs/"+maillage+"/"+schema);
+// exec("mkdir "+"Erreurs/"+maillage+"/"+schema+"/"+discr);
+// exec("mkdir "+"Erreurs/"+maillage+"/"+schema+"/"+discr+"/"+pas);
+
+// string chemin="Erreurs/"+maillage+"/"+schema+"/"+discr+"/"+pas+"/";
+// ofstream ErreurL2(chemin+"erreurL2.gp",append);
+// ofstream ErreurH1(chemin+"erreurH1.gp",append);
+// for (int i=0;i<erreurL2.n;i++){
+// 	ErreurL2<<i*pas<<" "<<erreurL2(i)<<endl;
+// 	ErreurH1<<i*pas<<" "<<erreurH1(i)<<endl;
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*exec("echo 'plot \"convergence.gp\" using 1:2 w l\*/
+/*pause 2 \*/
+/*set term postscript enhanced color \*/
+/*set output \"convergencel2.eps\" \*/
+/*replot \*/
+/*' | gnuplot");*/
+
+/*exec("echo 'plot \"convergence.gp\" using 1:3 with lines\*/
+/*pause 2 \*/
+/*set term postscript \*/
+/*set output \"convergenceh1.eps\" \*/
+/*replot \*/
+/*quit \*/
+/*' | gnuplot");*/
+
+cout<<"Rappel"<<endl<<endl<<"Maillage : "<<maillage<<endl<<"Schema : "<<schema<<" Pas de temps : "<<pas<<endl;
+
+
+
+

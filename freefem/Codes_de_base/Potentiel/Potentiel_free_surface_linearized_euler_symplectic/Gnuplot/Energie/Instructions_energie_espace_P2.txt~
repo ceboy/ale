@@ -1,0 +1,23 @@
+############ Gnuplot
+
+
+set autoscale
+set ylabel 'Energie'
+set xlabel 't'
+#set xrange [0:0.1]
+plot 'convergence_5_0.004_P2_E.gp' u 1:2 w line t 'm: 5 ; pas : 16'
+
+#replot 'convergence_16_0.2_P2_E.gp' u 1:2 w line t 'm: 16 ; pas :5'
+
+replot 'convergence_16_0.04_P2_E.gp' u 1:2 w line t 'm: 16 ; pas :10'
+
+replot 'convergence_16_0.015_P2_E.gp' u 1:2 w line t 'm: 16 ; pas :10'
+
+replot 'convergence_10_0.004_P2_E.gp' u 1:2 w line t 'm: 10 ; pas :16'
+
+replot 'convergence_15_0.004_P2_E.gp' u 1:2 w line t 'm: 15 ; pas :16'
+
+#set term postscript enhanced color
+#set output "convergence_16_EI_P2_LinfL2.eps"
+#replot
+#unset output

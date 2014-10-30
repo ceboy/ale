@@ -1,0 +1,168 @@
+
+///////////// ATTENTION : spécifier l'espace de discretisation lorsqu'on les crée et lors du chargement
+
+
+
+/////////////////////////////////////////////////////////////////////////////////// données
+real pas =0.005;
+int T = 500;
+
+///////////////////////////////////////////////////////////////////////////////////    Maillage
+int finesse;
+string maillage;
+mesh Th;
+
+while(finesse!=2 & finesse!=3 & finesse!=4){
+	cout<<"Choix du maillage : 2 grossier, 3 moyen, 4 fin"<<endl;
+	cin>> finesse;
+}
+
+cout<<endl<<"Maillage choisi : ";
+if (finesse==2){
+	maillage="grossier";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carregrossier.msh"); 
+}
+if (finesse==3){
+	maillage="moyen";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carremoyen.msh"); 
+}
+if (finesse==4){
+	maillage="fin";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carrefin.msh"); 
+}
+
+mesh Thref=readmesh("Carreref.msh"); 
+
+
+///////////////////////////////////////////////////////////////////////////////////   Espace de discretisation
+
+fespace Uh(Th,P1b);
+fespace Ph(Th,P1);
+
+fespace Uhref(Thref,P1b);
+fespace Phref(Thref,P1);
+
+string discr = "P1b";
+
+
+///////////////////////////////////////////////////////////////////////////////////   Macros
+
+macro norme(u,v) (sqrt(int2d(Thref)(square(dx(u))+square(dy(u)))+int2d(Thref)(square(dx(v))+square(dy(v))))) //
+
+
+///////////////////////////////////////////////////////////////////////////////////    Chargement des données
+
+// Stockage
+real[int] utab(Uh.ndof);
+real[int] vtab(Uh.ndof);
+real[int] ptab(Uh.ndof);
+
+real[int] utabref(Uhref.ndof);
+real[int] vtabref(Uhref.ndof);
+
+Uh u,v;
+Uhref uref,vref;
+
+Ph p;
+
+// Chargement des vitesses
+
+ifstream U("Resultats_"+maillage+"/"+discr+"/u.txt");
+U>>u[];
+utab(0:Uh.ndof-1)=u[];
+ifstream V("Resultats_"+maillage+"/"+discr+"/v.txt");
+V>>v[];
+vtab(0:Uh.ndof-1)=v[];
+ifstream P("Resultats_"+maillage+"/"+discr+"/p.txt");
+P>>p[];
+ptab(0:Uh.ndof-1)=v[];	
+
+cout<<"Vitesses chargees"<<endl;
+
+// Chargement des vitesses de reférence
+
+/*ifstream Uref("Resultats_ref/"+discr+"/u.txt");*/
+/*Uref>>uref[];*/
+/*//cout<<uref[]<<endl;*/
+/*utabref(0:Uhref.ndof-1)=uref[];*/
+/*ifstream Vref("Resultats_ref/"+discr+"/v.txt");*/
+/*Vref>>vref[];*/
+/*vtabref(0:Uhref.ndof-1)=vref[];*/
+
+
+/*cout<<"Vitesses de reference chargees"<<endl;*/
+
+
+///////////////////////////////////////////////////////////////////////////////////    Calculs des erreurs
+
+real erreur;
+
+u[]=utab(0:Uh.ndof-1);
+v[]=vtab(0:Uh.ndof-1);
+/*uref[]=utabref(0:Uhref.ndof-1);*/
+/*vref[]=vtabref(0:Uhref.ndof-1);*/
+uref = sin(y*pi)*(1+cos(x*pi))/2; 
+vref = -sin(x*pi)*(1+cos(y*pi))/2;
+//plot([uref,vref],wait=1);
+/*plot([u,v],wait=1);*/
+//cout<<vtabref(0:Uhref.ndof-1,i);
+real norm=norme(uref,vref);
+uref=uref-u;
+vref=vref-v;
+
+erreur=norme(uref,vref);///norm;
+cout<<"erreur : "<<erreur<<endl;
+
+
+ 
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////    Calcul de h
+
+Uh h=hTriangle;
+real[int] htab(Uh.ndof);
+htab(0:Uh.ndof-1)=h[];
+real hsum=htab.sum;
+real hnbr=htab.n;
+real H=hsum/hnbr;
+cout<<H<<endl;
+
+
+///////////////////////////////////////////////////////////////////////////////////    Sauvegarde pour gnuplot
+
+string name="convergence";
+ofstream ff(name+".gp",append);
+ff << H << "  "  << erreur<< endl;
+
+/*Uh test;*/
+/*real[int] testtab(Uh.ndof);*/
+/*test=dy(v)+dx(u);*/
+/*testtab(0:Uh.ndof)=test[];*/
+/*cout<<testtab.max<<endl;*/
+
+
+/*exec("echo 'plot \"convergence.gp\" using 1:2 w l\*/
+/*pause 2 \*/
+/*set term postscript enhanced color \*/
+/*set output \"convergencel2.eps\" \*/
+/*replot \*/
+/*' | gnuplot");*/
+
+/*exec("echo 'plot \"convergence.gp\" using 1:3 with lines\*/
+/*pause 2 \*/
+/*set term postscript \*/
+/*set output \"convergenceh1.eps\" \*/
+/*replot \*/
+/*quit \*/
+/*' | gnuplot");*/
+
+cout<<"Rappel"<<endl<<endl<<"Maillage : "<<maillage<<endl;
+
+
+
+

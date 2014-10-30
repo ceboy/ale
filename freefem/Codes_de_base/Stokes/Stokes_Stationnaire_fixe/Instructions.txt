@@ -1,0 +1,20 @@
+############ Gnuplot
+
+
+set autoscale
+set title 'Erreur en espace pour la norme H1 - Stokes'
+set xlabel 'log(h)'
+set ylabel 'log(erreur)'
+
+plot 'convergenceP2.gp' u (log($1)):(log($2)) w line t 'P2'
+
+replot 2*x w line t 'ordre 2'
+
+replot 'convergenceP1b.gp' u (log($1)):(log($2)) w line t 'P1b'
+
+replot x+0.5 w line t 'ordre 1'
+
+set term postscript enhanced color
+set output "convergence.eps"
+replot
+unset output

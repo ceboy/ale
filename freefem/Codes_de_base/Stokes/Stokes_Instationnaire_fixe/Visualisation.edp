@@ -1,0 +1,145 @@
+
+/////////////////////////////////////////////////////////////////////////////////// données
+real pas =0.005;
+int T = 500;
+
+///////////////////////////////////////////////////////////////////////////////////    Maillage
+int finesse;
+string maillage;
+mesh Th;
+
+while(finesse!=2 & finesse!=3 & finesse!=4){
+	cout<<"Choix du maillage : 2 grossier, 3 moyen, 4 fin"<<endl;
+	cin>> finesse;
+}
+
+cout<<endl<<"Maillage choisi : ";
+if (finesse==2){
+	maillage="grossier";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carregrossier.msh"); 
+}
+if (finesse==3){
+	maillage="moyen";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carremoyen.msh"); 
+}
+if (finesse==4){
+	maillage="fin";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carrefin.msh"); 
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////// Schéma
+string schema;
+int type;
+while (type!=1 & type!=2){
+	cout<<"Choix du schema : Euler Implicite 1 ou Crank Nicolson 2"<<endl;
+	cin>>type;
+}
+if (type==1){
+	schema="EI";
+}
+if (type==2){
+	schema="CN";
+}
+
+///////////////////////////////////////////////////////////////////////////////////   Espace de discretisation
+
+fespace Uh(Th,P1b);
+fespace Ph(Th,P1);
+
+
+///////////////////////////////////////////////////////////////////////////////////    Chargement des données
+
+// Stockage
+real[int,int] utab(Uh.ndof,T);
+real[int,int] vtab(Uh.ndof,T);
+real[int,int] ptab(Ph.ndof,T);
+
+
+Uh u,v;
+Ph p;
+
+
+// Chargement des vitesses
+for (int i=0;i<T;i++){
+	ifstream U("Resultats_"+maillage+"/"+schema+"/u/u"+i+".txt");
+	U>>u[];
+	utab(0:Uh.ndof-1,i)=u[];
+	ifstream V("Resultats_"+maillage+"/"+schema+"/v/v"+i+".txt");
+	V>>v[];
+	vtab(0:Uh.ndof-1,i)=v[];
+	
+}
+
+cout<<"Vitesses chargees"<<endl;
+
+// Chargement des pressions
+for (int i=0;i<T;i++){
+	ifstream P("Resultats_"+maillage+"/"+schema+"/p/p"+i+".txt");
+	P>>p[];
+	ptab(0:Ph.ndof-1,i)=p[];
+
+	
+}
+
+cout<<"Pressions chargees"<<endl;
+
+
+///////////////////////////////////////////////////////////////////////////////////    Sauvegarde pour paraview
+
+exec("mkdir "+"Visualisation_"+maillage+"_"+schema);
+
+// Projections des vitesses sur P1
+Ph up,vp;
+
+for (int iter=0;iter<T;iter++){
+
+	u[]=utab(0:Uh.ndof-1,iter);
+	v[]=vtab(0:Uh.ndof-1,iter);
+	p[]=ptab(0:Ph.ndof-1,iter);
+	
+
+	string vtkname="Visualisation_"+maillage+"_"+schema+"/unsteadystokes."+iter+".vtk";
+	ofstream fvtk(vtkname);
+	fvtk << "# vtk DataFile Version 2.0" << endl;
+	fvtk << "Unsteady Stokes" << endl;
+	fvtk << "ASCII" << endl;
+	fvtk << "DATASET UNSTRUCTURED_GRID" << endl;
+	int nbvertices=Th.nv;
+	fvtk << "POINTS " << nbvertices << " float" << endl;
+	for (int i=0;i<nbvertices;i++)
+	fvtk << Th(i).x << " " << Th(i).y << " " << 0 << endl;
+	fvtk << endl;
+	int nbtriangles=Th.nt;
+	fvtk << "CELLS " << nbtriangles << " " << 4*nbtriangles << endl;
+	for (int i=0;i<nbtriangles;i++){
+		fvtk << 3;
+		for (int j=0;j<3;j++){fvtk << " " << Th[i][j];}
+		fvtk << endl;
+	}
+	fvtk << endl;
+	fvtk << "CELL_TYPES " << nbtriangles << endl;
+	for (int i=0;i<nbtriangles;i++){
+		fvtk << 5 << endl;
+	}
+	fvtk << endl;
+	// the vectors are point data when the gradient is interpolated on P1
+	// the vectors are cell data when the gradient is only computed (in P0)
+	fvtk << "POINT_DATA " << nbvertices <<endl;
+	fvtk << "SCALARS " << "pression " << "float"<<endl;
+	fvtk << "LOOKUP_TABLE " << "default " << endl;
+	for(int i=0;i<nbvertices;i++){
+		fvtk << p[][i] << endl;
+	}
+	fvtk << endl;
+	fvtk << "VECTORS " << "vitesse " << "float"<<endl; up = u; vp = v;
+	for (int i=0;i<nbvertices;i++){
+		fvtk <<  up[][i] << "    " << vp[][i] << "    " << 0.0 << endl;
+				}
+
+}
+
+

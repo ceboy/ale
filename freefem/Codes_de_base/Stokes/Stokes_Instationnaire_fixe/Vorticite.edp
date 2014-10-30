@@ -1,0 +1,33 @@
+
+/////////////////////////////////////////////////////////////////////////////////// données
+real pas =0.005;
+int T = 500;
+
+/////////////////////////////////////////////////////////////////////////////////// Maillage
+int finesse;
+string maillage;
+mesh Th;
+
+while(finesse!=2 & finesse!=3 & finesse!=4){
+	cout<<"Choix du maillage : 2 grossier, 3 moyen, 4 fin"<<endl;
+	cin>> finesse;
+}
+
+cout<<endl<<"Maillage choisi : ";
+if (finesse==2){
+	maillage="grossier";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carregrossier.msh"); 
+}
+if (finesse==3){
+	maillage="moyen";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carremoyen.msh"); 
+}
+if (finesse==4){
+	maillage="fin";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carrefin.msh"); 
+}
+
+mesh Thref=readmesh("Carreref.msh"); 

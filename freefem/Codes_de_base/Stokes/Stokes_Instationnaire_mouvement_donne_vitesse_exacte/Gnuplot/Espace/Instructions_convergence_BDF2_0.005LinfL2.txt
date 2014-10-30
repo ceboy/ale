@@ -1,0 +1,13 @@
+############ Gnuplot
+
+set title 'Erreur LinfL2 en espace pour BDF2'
+
+set autoscale
+
+plot 'convergence_BDF2_P1b_0.002_LinfL2.gp' u (log($1)):(log($2)) w line t 'P1b'
+
+replot 'convergence_BDF2_P2_0.002_LinfL2.gp' u (log($1)):(log($2)) w line t 'P2'
+
+replot x-4 w line t 'ordre 1'
+
+replot 2*x-3 w line t 'ordre 2'

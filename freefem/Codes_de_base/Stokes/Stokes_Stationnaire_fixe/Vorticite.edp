@@ -1,0 +1,93 @@
+
+/////////////////////////////////////////////////////////////////////////////////// données
+real pas =0.005;
+int T = 500;
+
+/////////////////////////////////////////////////////////////////////////////////// Maillage
+int finesse;
+string maillage;
+mesh Th;
+
+while(finesse!=2 & finesse!=3 & finesse!=4){
+	cout<<"Choix du maillage : 2 grossier, 3 moyen, 4 fin"<<endl;
+	cin>> finesse;
+}
+
+cout<<endl<<"Maillage choisi : ";
+if (finesse==2){
+	maillage="grossier";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carregrossier.msh"); 
+}
+if (finesse==3){
+	maillage="moyen";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carremoyen.msh"); 
+}
+if (finesse==4){
+	maillage="fin";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carrefin.msh"); 
+}
+
+//mesh Thref=readmesh("Carreref.msh"); 
+
+///////////////////////////////////////////////////////////////////////////////////   Espace de discretisation
+string discr="P2";
+
+fespace Uh(Th,P2);
+fespace Ph(Th,P1);
+fespace Wh(Th,P1dc);
+
+/*fespace Uhref(Thref,P1b);*/
+/*fespace Phref(Thref,P1);*/
+
+
+///////////////////////////////////////////////////////////////////////////////////    Chargement des données
+
+// Stockage
+real[int] utab(Uh.ndof);
+real[int] vtab(Uh.ndof);
+
+/*real[int] utabref(Uhref.ndof);*/
+/*real[int] vtabref(Uhref.ndof);*/
+
+Uh u,v;
+/*Uhref uref,vref;*/
+
+// Chargement des vitesses
+
+ifstream U("Resultats_"+maillage+"/"+discr+"/u.txt");
+U>>u[];
+utab(0:Uh.ndof-1)=u[];
+ifstream V("Resultats_"+maillage+"/"+discr+"/v.txt");
+V>>v[];
+vtab(0:Uh.ndof-1)=v[];
+	
+
+cout<<"Vitesses chargees"<<endl;
+
+/*// Chargement des vitesses de reférence*/
+
+/*ifstream Uref("Resultats_ref/u.txt");*/
+/*Uref>>uref[];*/
+/*//cout<<uref[]<<endl;*/
+/*utabref(0:Uhref.ndof-1)=uref[];*/
+/*ifstream Vref("Resultats_ref//v.txt");*/
+/*Vref>>vref[];*/
+/*vtabref(0:Uhref.ndof-1)=vref[];*/
+
+
+/*cout<<"Vitesses de reference chargees"<<endl;*/
+
+///////////////////////////////////////////////////////////////////////////////////    Calcul de la vorticité
+Wh w,wref;
+
+w=dx(v)-dy(u);
+
+func wana=-pi*cos(x*pi)*(1+cos(y*pi))/2-pi*cos(y*pi)*(1+cos(x*pi))/2;
+wref=wana;
+plot([u,v],fill=1,wait=1);
+plot(wref,fill=1,wait=1);
+
+

@@ -1,0 +1,19 @@
+############ Gnuplot
+
+set title 'Erreur L2H1 en espace pour EI'
+set xlabel 'log(h)'
+set ylabel 'log(erreur)'
+set autoscale
+
+plot 'convergence_EI_P1b_0.005_L2H1.gp' u (log($1)):(log($2)) w line t 'P1b'
+
+replot 'convergence_EI_P2_0.005_L2H1.gp' u (log($1)):(log($2)) w line t 'P2'
+
+replot x+5.5 w line t 'ordre 1'
+
+replot 2*x+2 w line t 'ordre 2'
+
+set term postscript enhanced color
+set output "convergence_EI_0.005_L2H1.eps"
+replot
+unset output

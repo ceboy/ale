@@ -1,0 +1,618 @@
+// Moving Stokes with given movement
+
+
+///////////////////////////////////////////////////////////////////////////////////    Données
+verbosity = 1;
+
+real eps1 = 1.e-10;
+real mytgv = 1.e30;
+
+real rho = 1.; real mu = 1.e-6;
+
+
+real g = 10;
+
+// Géomterie de la vague
+real Hwave = 1;
+real hwave = 3;
+real kwave = 3;
+real wwave = sqrt(g*kwave*tanh(kwave*hwave));
+real Twave = 2*pi/wwave;
+real Lwave = 2*pi/kwave;
+
+// Géometrie du maillage de référence
+real x0=0;
+real x1=2*pi;
+
+real y0=0;
+real y1=hwave;
+
+// Force
+func f1 = ((pi/hwave)^2)*sin(pi*y/hwave);
+func f2 = -pi*sin(pi*y/hwave);
+
+func aana=sin(y*pi/hwave);
+
+///////////////////////////////////////////////////////////////////////////////////    Pas de temps
+real pas;
+real T;
+int mypas;
+while(mypas!=2 & mypas!=3 & mypas!=4 & mypas!=5 ){
+	cout<<"Choix du pas de temps : 2 grossier, 3 moyen, 4 fin"<<endl;
+	cin>> mypas;
+}
+
+if (mypas==2){
+	pas=0.1;
+	T=10;
+}
+if (mypas==3){
+	pas=0.05;
+	T=20.;
+}
+if (mypas==4){
+	pas=0.01;
+	T=100.;
+}
+// if (mypas==2){
+// 	pas=0.25;
+// 	T=4.;
+// }
+// if (mypas==3){
+// 	pas=0.2;
+// 	T=5.;
+// }
+// if (mypas==4){
+// 	pas=0.1;
+// 	T=10;
+// }
+if (mypas==5){
+	pas=0.002;
+	T=500.;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////    Maillage de référence
+int finesse;
+int coef;
+while(finesse!=2 & finesse!=3 & finesse!=4 & finesse!=5 & finesse!=6){
+	cout<<"Choix du maillage : 2 grossier, 3 moyen, 4 fin, 5 ref"<<endl;
+	cin>> finesse;
+}
+string maillage;
+if (finesse==2){
+	maillage="grossier";
+	coef=20;
+}
+if (finesse==3){
+	maillage="moyen";
+	coef=35;
+}
+if (finesse==4){
+	maillage="fin";
+	coef=50;
+}
+if (finesse==5){
+	maillage="ref";
+	coef=100;
+}
+if (finesse==6){
+	maillage="ref1";
+	coef=200;
+}
+mesh Th0=square(coef,coef,[x0+(x1-x0)*x,y0+(y1-y0)*y]);
+/*plot(Th0);*/
+
+mesh Th=Th0;
+
+///////////////////////////////////////////////////////////////////////////////////     Choix schéma
+string schema;
+int type;
+while (type!=1 & type!=2 & type!=3){
+	cout<<"Choix du schema : Euler Implicite 1 ou Crank Nicolson 2 ou BDF2 3"<<endl;
+	cin>>type;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////    Formule variatonnelle
+varf mass(u,v) = int2d(Th)(u*v);
+
+varf rigidity(u,v) = int2d(Th)(dx(u)*dx(v)+dy(u)*dy(v));
+
+varf boundary(u,v) = on(1,3,u=1);
+
+varf boundary1(u,v) = on(1,u=1);
+
+varf boundary3(u,v) = on(3,u=1);
+
+varf SecMem1(u,v,tgv=mytgv) = int2d(Th)( f1*v );
+
+varf SecMem2(u,v,tgv=mytgv) = int2d(Th)( f2*v );
+///////////////////////////////////////////////////////////////////////////////////    Discrétisation en espace
+
+/// Vitesse du maillage
+fespace Dh(Th,P2,periodic=[[2,y],[4,y]]);
+Dh eta0,eta1,umesh,translation, dxeta0;
+
+/// Vitesse du fluide
+fespace Uh(Th,P2,periodic=[[2,y],[4,y]]); 
+Uh u,v;
+
+/// Pression
+fespace Ph(Th,P1,periodic=[[2,y],[4,y]]);
+Ph p;
+/// Copie pour sauvegarder
+fespace Ch(Th,P1,periodic=[[2,y],[4,y]]);
+
+
+/// Concentration
+string discr="P2";
+fespace Ah(Th,P2,periodic=[[2,y],[4,y]]);
+Ah a,sec1,sec2,sec;
+
+
+matrix MASS ;//= mass(Uh,Uh,tgv=mytgv);
+
+matrix RIGIDITY;// = rigidity(Uh,Uh,tgv=mytgv);
+
+matrix D;
+
+matrix C;
+
+matrix Q;
+
+matrix A,Ap;
+
+matrix BOUNDARYPENALIZATION;
+
+real[int] BOUNDARY1(Ah.ndof);
+
+real[int] BOUNDARY3(Ah.ndof);
+
+real[int] MA0(Ah.ndof);
+
+real[int] MA1(Ah.ndof);
+
+real[int] Q0(Ah.ndof);
+
+real[int] BC1(Ah.ndof);
+
+real[int] BC3(Ah.ndof);
+
+real[int] F(Ah.ndof);
+
+real[int] Fav(Ah.ndof);
+
+real[int] B(Ah.ndof);
+///////////////////////////////////////////////////////////////////////////////////  Boucle en temps
+
+
+/// Initialisation
+
+real[int] erreurL2(T-1);
+real normL2max=0;
+real[int] erreurH1(T-1);
+real normH1max=0;
+
+real t=0;
+eta0 = (Hwave/2)*cos(kwave*x-wwave*t)*(y/hwave);
+
+
+real[int] temp1(u.n);
+real[int] temp2(v.n);
+real[int] temp3(p.n);
+real[int] temp4(eta0[].n); 
+real[int] temp5(umesh[].n);
+real[int] temp6(a[].n);
+
+temp4=eta0[];
+
+
+
+
+
+
+
+/// Déformation du maillage
+translation=y;
+translation[]+=eta0[];
+Th=movemesh(Th,[x,translation]);
+// plot(Th,wait=1);
+
+eta0 = 0;
+u=0.;
+v=0.;
+p=0.;
+umesh=0.;
+a=0.;
+
+u = (pi*Hwave/Twave)*(cosh(kwave*(y))/sinh(kwave*hwave))*cos(kwave*x-wwave*t); 
+v = (pi*Hwave/Twave)*(sinh(kwave*(y))/sinh(kwave*hwave))*sin(kwave*x-wwave*t);
+p = -rho*g*(y-hwave) + rho*(g*Hwave/2)*(cosh(kwave*(y))/cosh(kwave*hwave))*cos(kwave*x-wwave*t);
+umesh = wwave*(Hwave/2)*sin(kwave*x-wwave*t)*(y/hwave);
+a= sin(y*pi/hwave);
+// plot(Th,[u,v],wait=1);
+// plot(a,fill=1,wait=1,boundary=0);
+
+temp1=u[];
+temp2=v[];
+temp3=p[];
+temp5=umesh[];
+temp6=a[];
+
+
+varf advection(u,v)=-int2d(Th)(umesh*dy(u)*v);
+
+varf deplacement(u,v)=-int2d(Th)(dy(umesh)*v*u);
+	
+	
+MASS= mass(Ah,Ah,tgv=mytgv);
+RIGIDITY = rigidity(Ah,Ah,tgv=mytgv);
+D = deplacement(Ah,Ah,tgv=mytgv);
+C = advection(Ah,Ah,tgv=mytgv);
+Q=RIGIDITY+D+C;
+
+MA0=MASS*temp6;
+Q0=Q*temp6;
+
+sec1[] = SecMem1(0,Ah,tgv=mytgv);
+sec1[] *= cos(t*pi);
+sec2[] = SecMem2(0,Ah,tgv=mytgv);
+sec2[] *= sin(t*pi);
+
+Fav=sec1[]+sec2[];
+sec[]=sec1[]+sec2[];
+// plot(sec,wait=1,boundary=0,fill=1);
+
+
+/// Boucle
+
+for (int iter=1;iter<T;iter++){
+	///////////////////////// Sauvegarde Paraview
+	
+	///////////////////////// Mise à jour du temps
+	t+=pas;
+	cout<<"t : "<<t<<endl;
+
+	///////////////////////// Déformation du maillage
+
+	
+	/// Retour au carré
+	eta0[]=temp4;
+	translation = y; translation[] -= eta0[];
+	Th = movemesh(Th,[x,translation]); 
+// 	plot(Th,wait=1,cmm="carre");	
+	
+	u = 0;
+	v = 0;
+	p=0;
+	eta0 = 0;// 	plot(Th,[u,v],wait=1,value=1);
+	umesh = 0;
+	a = 0;
+
+	
+	u[] = temp1;
+	v[] = temp2;
+	p[]= temp3;
+	eta0[] = temp4;
+	umesh[] = temp5;
+	a[] = temp6;
+// 	plot(Th,[u,v],wait=1,cmm="retour carre");
+
+	/// Déformation finale
+	eta1=0.;
+	eta1 = (Hwave/2)*cos(kwave*x-wwave*t)*(y/hwave);
+	
+	translation=y;
+	translation[]+=eta1[];
+
+	Th=movemesh(Th,[x,translation]); 
+// 	plot(Th,wait=1,cmm="nouveau maillage");
+
+
+	u = 0;
+	v = 0;
+	eta0 = 0;
+	umesh = 0;
+	a=0;
+	
+	u[] = temp1;
+	v[] = temp2;
+	eta0[]=eta1[];
+	umesh[] = temp4;
+	u=0.;
+	v=0.;
+	u = (pi*Hwave/Twave)*(cosh(kwave*(y))/sinh(kwave*hwave))*cos(kwave*x-wwave*t); 
+	v = (pi*Hwave/Twave)*(sinh(kwave*(y))/sinh(kwave*hwave))*sin(kwave*x-wwave*t);
+	p = -rho*g*(y-hwave) + rho*(g*Hwave/2)*(cosh(kwave*(y))/cosh(kwave*hwave))*cos(kwave*x-wwave*t);
+	umesh = wwave*(Hwave/2)*sin(kwave*x-wwave*t)*(y/hwave);
+	a[]=temp6;
+
+	
+
+	///////////////////////// Laplace pour la concentration
+
+	
+	/// Données du problème linéaire
+	
+	varf advection(u,v)=-int2d(Th)(umesh*dy(u)*v);
+	
+	varf deplacement(u,v)=-int2d(Th)(dy(umesh)*v*u);
+	
+
+
+	MASS = mass(Ah,Ah,tgv=mytgv);
+
+	RIGIDITY = rigidity(Ah,Ah,tgv=mytgv);
+	
+	D = deplacement(Ah,Ah,tgv=mytgv);
+	
+	C = advection(Ah,Ah,tgv=mytgv);
+	
+	sec=0.;
+	sec1=0.;
+	sec2=0;
+	sec1[] = SecMem1(0,Ah,tgv=mytgv);
+	sec1[] *= cos(t*pi);
+	sec2[] = SecMem2(0,Ah,tgv=mytgv);
+	sec2[] *= sin(t*pi);
+	
+	F=sec1[]+sec2[];
+	sec[]=sec1[]+sec2[];
+//  	plot(sec,wait=1,boundary=0,fill=1,value=1,cmm="F");
+	
+	Ah ftest;
+	ftest=((pi/hwave)^2)*sin(pi*y/hwave)*cos(t*pi)-pi*sin(pi*y/hwave)*sin(pi*t);
+// 	plot(ftest,wait=1,boundary=0,fill=1,value=1);
+	BOUNDARYPENALIZATION = boundary(Ah,Ah,tgv=mytgv); 
+	
+	Q=RIGIDITY+D+C;
+	
+	Ah Ftest;
+	Ftest=0.;
+	Ftest[]=Fav;
+// 	plot(Ftest,wait=1,boundary=0,fill=1,value=1,cmm="Fav");
+
+	/// Euler Implicite
+	if (type==1){
+		schema="EI";
+		/// Construction du problème linéaire
+		A=(MASS+pas*Q);
+		B=MA0+pas*F;
+		
+		/// Conditions aux limites
+		Ap=A+BOUNDARYPENALIZATION;
+		
+		Ah at,atest;
+		at=aana;
+		
+		BC3=at[];
+		BC3*=mytgv*cos(pi*t);
+		atest[]=BC3;
+// 		plot(atest,fill=1,wait=1,boundary=0);
+		
+		BC1=at[];
+		BC1*=0;
+		
+
+		BOUNDARY1 = boundary1(0,Ah);
+		
+		BOUNDARY3 = boundary3(0,Ah);
+		
+
+		B(0:Ah.ndof-1) = BOUNDARY1 ? BC1 : B(0:Ah.ndof-1);
+		B(0:Ah.ndof-1) = BOUNDARY3 ? BC3 : B(0:Ah.ndof-1);
+
+		/// Résolution du problème linéaire
+		real[int] U(Ah.ndof);
+		set(Ap,eps=eps1,solver=UMFPACK);
+		U=Ap^-1*B;
+		
+		/// Récuperation des resultats
+		a[]=U(0:Ah.ndof-1);
+		MA0=MASS*a[];
+		//plot(a,fill=1,wait=1,value=1,boundary=0);
+		/// Test
+// 		BOUNDARY3 = boundary3(0,Ah);
+// 		
+// 		real[int] test1(Ah.ndof);
+// 		real[int] test2(Ah.ndof);
+// 		real[int] test3(Ah.ndof);
+// 		real[int] test4(Ah.ndof);
+// 		real[int] test5(Ah.ndof);
+// 		test1=U;
+// 		test2=0*U;
+// 		test4=at[]*cos(pi*t);
+// 		test3(0:Ah.ndof-1)= BOUNDARY3 ? test1(0:Ah.ndof-1) : test2(0:Ah.ndof-1);
+// 		test4(0:Ah.ndof-1)= BOUNDARY3 ? test4(0:Ah.ndof-1) : test2(0:Ah.ndof-1);
+// 		test5=test4-test3;
+// 		cout<<"test : "<<test5.max<<endl;
+		
+	}
+	
+	/// Crank Nicolson
+	if (type==2){
+		schema="CN";
+		real theta=0.5;
+	
+		/// Construction du problème linéaire
+		A=(MASS+theta*pas*Q);
+		B=MA0+theta*pas*F;
+		B=B+(1.-theta)*pas*Fav;
+		B=B+pas*(theta-1.)*Q0;
+		
+		/// Conditions aux limites
+		Ap=A+BOUNDARYPENALIZATION;
+		
+		Ah at,atest;
+		at=aana;
+		
+		BC3=at[];
+		BC3*=mytgv*cos(pi*t);
+		atest[]=BC3;
+		//plot(atest,fill=1,wait=1,boundary=0);
+		
+		BC1=at[];
+		BC1*=0;
+		
+
+		BOUNDARY1 = boundary1(0,Ah);
+		
+		BOUNDARY3 = boundary3(0,Ah);
+		
+
+		B(0:Ah.ndof-1) = BOUNDARY1 ? BC1 : B(0:Ah.ndof-1);
+		B(0:Ah.ndof-1) = BOUNDARY3 ? BC3 : B(0:Ah.ndof-1);
+
+		/// Résolution du problème linéaire
+		real[int] U(Ah.ndof);
+		set(Ap,eps=eps1,solver=UMFPACK);
+		U=Ap^-1*B;
+		
+		/// Récuperation des resultats
+		a[]=U(0:Ah.ndof-1);
+// 		MA0=0.;
+// 		Q0=0.;
+// 		Fav=0.;
+		MA0=MASS*a[];
+		Q0=Q*a[];
+		Fav=F;
+// 		cout<<MA0<<endl;
+// 		plot(a,fill=1,wait=1,value=1,boundary=0);
+		
+		/// Test
+		
+		real[int] test1(Ah.ndof);
+		real[int] test2(Ah.ndof);
+		real[int] test3(Ah.ndof);
+		real[int] test4(Ah.ndof);
+		real[int] test5(Ah.ndof);
+		test1=U;
+		test2=0*U;
+		test4=at[]*cos(pi*t);
+		test3(0:Ah.ndof-1)= BOUNDARY3 ? test1(0:Ah.ndof-1) : test2(0:Ah.ndof-1);
+		test4(0:Ah.ndof-1)= BOUNDARY3 ? test4(0:Ah.ndof-1) : test2(0:Ah.ndof-1);
+		test5=test4-test3;
+		cout<<"test : "<<test5.max<<endl;
+
+	}
+	
+	/// BDF2
+	if (type==3){
+		schema="BDF2";
+		
+		/// Initialisation
+		if (iter==1){
+			a=aana*cos(pi*t);
+			MA1=MASS*a[];
+		}
+		
+		if (iter>1){
+			
+			/// Construction du problème linéaire
+			A=(MASS+(2./3.)*pas*Q);
+			B=(4./3.)*MA1+(-1./3.)*MA0;
+			B=B+(2./3.)*pas*F;
+
+			/// Conditions aux limites
+			Ap=A+BOUNDARYPENALIZATION;
+			
+			Ah at,atest;
+			at=aana;
+			
+			BC3=at[];
+			BC3*=mytgv*cos(pi*t);
+			atest[]=BC3;
+			//plot(atest,fill=1,wait=1,boundary=0);
+			
+			BC1=at[];
+			BC1*=0;
+			
+
+			BOUNDARY1 = boundary1(0,Ah);
+			
+			BOUNDARY3 = boundary3(0,Ah);
+			
+
+			B(0:Ah.ndof-1) = BOUNDARY1 ? BC1 : B(0:Ah.ndof-1);
+			B(0:Ah.ndof-1) = BOUNDARY3 ? BC3 : B(0:Ah.ndof-1);
+			
+			/// Résolution du problème linéaire
+			real[int] U(Ah.ndof);
+			set(Ap,eps=eps1,solver=UMFPACK);
+			U=Ap^-1*B;
+			
+			/// Récuperation des resultats
+			a[]=U(0:Ah.ndof-1);
+			MA0(0:Ah.ndof-1)=MA1(0:Ah.ndof-1);
+			MA1=MASS*a[];
+			
+		}
+		
+		
+	}
+	
+	///////////////////////// Visualisation
+	
+// 	plot(Th,[u,v],wait=1,value=1);
+
+//  	plot(a,fill=1,wait=1,value=1,boundary=0);
+	
+	///////////////////////// Calcul erreur
+	Ah aref,diff;
+	aref=aana*cos(pi*t);
+	//plot(aref,fill=1,wait=1,value=1,boundary=0);
+	diff[]=aref[]-a[];
+	erreurL2(iter-1)=sqrt(int2d(Th)(diff*diff));
+	erreurH1(iter-1)=sqrt(int2d(Th)((dx(diff))*(dx(diff)))+int2d(Th)(dy(diff)*dy(diff)));
+	cout<<erreurL2(iter-1)<<endl;
+	real normL2=sqrt(int2d(Th)(aref*aref));
+	if (normL2max<normL2){
+		normL2max=normL2;
+	}
+	real normH1=sqrt(int2d(Th)(dx(aref)*dx(aref))+int2d(Th)(dy(aref)*dy(aref)));
+	if (normH1max<normH1){
+		normH1max=normH1;
+	}
+	
+	
+
+	///////////////////////// Sauvegarde avant déformation du maillage
+	temp1=u[];
+	temp2=v[];
+	temp3=p[];
+	temp4=eta0[];
+	temp5=umesh[];
+	temp6=a[];
+	
+}
+// 
+///////////////////////// Traitement des erreurs
+Uh h=hTriangle;
+real[int] htab(Uh.ndof);
+htab(0:Uh.ndof-1)=h[];
+real hsum=htab.sum;
+real hnbr=htab.n;
+real H=hsum/hnbr;
+
+
+real erreurLinfL2=erreurL2.max/normL2max;
+real erreurL2H1=sqrt(erreurH1'*erreurH1)/normH1max;
+
+
+// exec("mkdir "+"Gnuplot");
+// exec("mkdir "+"Gnuplot/Espace");
+// ofstream ErreurLinfL2("Gnuplot/Espace/convergence_"+schema+"_"+discr+"_"+pas+"_LinfL2.gp",append);
+// ofstream ErreurL2H1("Gnuplot/Espace/convergence_"+schema+"_"+discr+"_"+pas+"_L2H1.gp",append);
+// ErreurLinfL2<<H<<" "<<erreurLinfL2<<endl;
+// ErreurL2H1<<H<<" "<<erreurL2H1<<endl;
+
+// exec("mkdir "+"Gnuplot/Temps");
+// ofstream ErreurLinfL2("Gnuplot/Temps/convergence_"+maillage+"_"+schema+"_"+discr+"_LinfL2.gp",append);
+// ofstream ErreurL2H1("Gnuplot/Temps/convergence_"+maillage+"_"+schema+"_"+discr+"_L2H1.gp",append);
+// ErreurLinfL2<<pas<<" "<<erreurLinfL2<<endl;
+// ErreurL2H1<<pas<<" "<<erreurL2H1<<endl;
+
+cout<<"Rappel"<<endl<<endl<<"Maillage : "<<maillage<<endl<<"Schema : "<<schema<<endl;
+
+

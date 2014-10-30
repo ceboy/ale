@@ -1,0 +1,18 @@
+############ Gnuplot
+
+
+set title 'Erreur LinfL2 en temps pour BDF2'
+set autoscale
+set xlabel 'log(pas)'
+set ylabel 'log(erreur)'
+
+plot 'convergence_fin_BDF2 P2L2.gp' u (log($1)):(log($2)) w line t 'BDF2'
+
+
+replot 2*x-4 w line t 'ordre 2'
+
+
+set term postscript enhanced color
+set output "convergence_BDF2_LinfL2.eps"
+replot
+unset output

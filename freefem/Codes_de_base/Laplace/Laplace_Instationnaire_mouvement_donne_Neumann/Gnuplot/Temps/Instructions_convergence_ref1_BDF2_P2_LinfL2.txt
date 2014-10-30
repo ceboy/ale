@@ -1,0 +1,11 @@
+############ Gnuplot
+
+
+set autoscale
+
+plot 'convergence_ref1_BDF2_P2_LinfL2.gp' u (log($1)):(log($2)) w line t 'BDF2'
+
+
+
+replot 2*x+2 w line t 'ordre 2'
+

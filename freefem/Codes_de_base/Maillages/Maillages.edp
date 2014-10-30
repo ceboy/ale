@@ -1,0 +1,40 @@
+//Maillage
+
+
+///////////////////////////////////////////////////////////////////////////////////    Géometrie
+
+int bas = 1;
+int droite = 2;
+int haut = 3;
+int gauche = 4;
+int cercle = 5;
+/*border Cg01(t=0,1){x=t*10;y=0;label=1;}*/
+/*border Cg02(t=0,1){x=10;y=t*10;label=2;}*/
+/*border Cg03(t=0,1){x=10-t*10;y=10;label=3;}*/
+/*border Cg04(t=0,1){x=0;y=10-t*10;label=4;}*/
+//border Cercle(t=0,2*pi){x=5+cos(t);y=5+sin(t);label=5;}
+//plot(Cg01(10)+Cg02(10)+Cg03(10)+Cg04(10)+Cercle(10));
+
+///////////////////////////////////////////////////////////////////////////////////    Maillage
+//grossier=2
+//moyen=3
+//fin=4
+//ref=5
+
+int finesse=1;
+mesh Th = square(10*finesse,10*finesse,flags=3);//buildmesh(Cg01(finesse*10)+Cg02(finesse*10)+Cg03(finesse*10)+Cg04(finesse*10));//+Cercle(finesse*-10));
+plot(Th,wait=1);
+savemesh(Th,"Carregrossier.msh");
+Th=trunc(Th,1,split=2);
+plot(Th,wait=1);
+savemesh(Th,"Carremoyen.msh");
+Th=trunc(Th,1,split=2);
+plot(Th,wait=1);
+savemesh(Th,"Carrefin.msh");
+Th=trunc(Th,1,split=2);
+cout<<Th.nt<<endl;
+plot(Th,wait=1);
+savemesh(Th,"Carreref.msh");
+Th=trunc(Th,1,split=2);
+cout<<Th.nt<<endl;
+

@@ -1,0 +1,170 @@
+// Stokes
+
+
+///////////////////////////////////////////////////////////////////////////////////    Données
+verbosity = 2;
+
+real eps1 = 1.e-10;
+real mytgv = 1.e30;
+
+// Solution analytique pour un carré seulement
+func f = 2.*pi^2*sin(pi*x)*sin(pi*y);;
+
+func uana = sin(pi*x)*sin(pi*y);
+
+
+
+///////////////////////////////////////////////////////////////////////////////////    Maillage
+int finesse;
+string maillage;
+mesh Th;
+
+while(finesse!=2 & finesse!=3 & finesse!=4 & finesse!=5){
+	cout<<"Choix du maillage : 2 grossier, 3 moyen, 4 fin, 5 ref"<<endl;
+	cin>> finesse;
+}
+
+cout<<endl<<"Maillage choisi : ";
+if (finesse==2){
+	maillage="grossier";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carregrossier.msh"); 
+}
+if (finesse==3){
+	maillage="moyen";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carremoyen.msh"); 
+}
+if (finesse==4){
+	maillage="fin";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carrefin.msh"); 
+}
+if (finesse==5){
+	maillage="ref";
+	cout<<maillage<<endl<<endl;
+	Th=readmesh("Carreref.msh"); 
+}
+
+///////////////////////////////////////////////////////////////////////////////////    Formule variatonnelle
+varf mass(u,v) = int2d(Th)(u*v);
+
+varf rigidity(u,v) = int2d(Th)(dx(u)*dx(v)+dy(u)*dy(v));
+
+varf boundary(u,v) = on(1,2,3,4,u=1);
+
+varf boundaryentree(u,v) = on(4,u=1);
+
+varf boundarysortie(u,v) = on(1,u=1);
+
+varf boundaryautres(u,v) = on(2,3,u=1);
+
+varf SecMem(u,v) = int2d(Th)(f*v);
+
+///////////////////////////////////////////////////////////////////////////////////    Discrétisation
+
+/// Espaces de discrétisation
+
+fespace Uh(Th,P1b); Uh u;
+
+
+/// Construction de la matrice à inverser
+
+/*matrix MASS = mass(Uh,Uh,tgv=mytgv);*/
+
+matrix RIGIDITY = rigidity(Uh,Uh,tgv=mytgv);
+/*cout<<"RIGIDITY m : "<<(RIGIDITY).m<<" n : "<<(RIGIDITY).n<<endl;*/
+
+matrix BOUNDARYPENALIZATION = boundary(Uh,Uh,tgv=mytgv); 
+
+matrix LAPLACE=RIGIDITY+BOUNDARYPENALIZATION;
+
+
+set(LAPLACE,eps=eps1,solver=GMRES,tgv=mytgv,dimKrylov=200);
+
+/// Construction du second membre avec penalisation
+
+Uh sec;
+
+real[int] F(Uh.ndof),U(Uh.ndof),BC(Uh.ndof);
+
+sec[] = SecMem(0,Uh,tgv=mytgv);
+
+F=sec[];
+
+u=0;
+
+BC=mytgv*u[];
+
+
+
+real[int] BOUNDARY = boundary(0,Uh);
+
+
+F = BOUNDARY ? BC : F;
+
+
+U=LAPLACE^-1*F;
+
+u[]=U(0:Uh.ndof-1);
+
+plot(u,fill=1,wait=1);
+
+
+///////////////////////////////////////////////////////////////////////////////////    Visualisation et Sauvegarde des données
+
+// Création des divers dossiers de stockage
+/*exec("mkdir "+"Resultats_"+maillage);*/
+/*	*/
+/*// Visualisation*/
+/*//plot(u,fill=0,wait=1);*/
+
+/*// Stockage*/
+/*ofstream Ufile ("Resultats_"+maillage+"/u.txt");*/
+/*Ufile<<u[];*/
+
+
+
+
+cout<<"Rappel"<<endl<<endl<<"Maillage : "<<maillage<<endl;
+
+///////////////////////////////////////////////////////////////////////////////////    Discrétisation
+
+/*real[int] wtab(Uh.ndof-1);*/
+/*Uh w;*/
+
+/*w=dx(v)-dy(u);*/
+/*wtab(0:Uh.ndof-1)=w[]; */
+/*//plot(w,wait=1);*/
+/*Uh div=dx(w)+dy(w);*/
+/*real[int] divtab(0:Uh.ndof-1);*/
+/*divtab(0:Uh.ndof-1)=div[];*/
+/*cout<<divtab.max<<endl;*/
+
+
+
+
+/*u=uana;*/
+/*v=vana;*/
+/*p=pana;*/
+/*plot([u,v],fill=1,wait=1);*/
+
+// Test
+
+/*real[int] Utest(taille),Test1(taille),Test2(taille),Test3(taille);*/
+/*int norme;*/
+
+/*Utest=[u[],v[],p[]];*/
+/*Test1=STOKES*Utest;*/
+/*Test2=Test1-F;*/
+
+/*for (int i=0;i<Test2.n;i++){*/
+/*	norme=Test2[i]^2+norme;*/
+/*	if (norme<100){*/
+/*		cout<<"ok"<<endl;*/
+/*	}*/
+/*}*/
+/*norme=sqrt(norme);*/
+
+/*cout<<Test2[0]^2<<endl;*/
+

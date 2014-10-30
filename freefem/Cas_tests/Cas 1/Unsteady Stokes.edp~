@@ -1,0 +1,789 @@
+// Stokes
+
+
+///////////////////////////////////////////////////////////////////////////////////    Données
+verbosity = 2;
+
+real eps1 = 1.e-10;
+real mytgv = 1.e30;
+
+
+///////////////////////////////////////////////////////////////////////////////////    Pas de temps
+real pas;
+real T;
+int mypas=0;
+while(mypas>16 || mypas<1){
+	cout<<"Choix du pas de temps : entre 1 et 16 du plus grossier au plus fin"<<endl;
+	cin>> mypas;
+}
+
+if (mypas==1){
+	pas=0.6;
+	T=10.;
+}
+if (mypas==2){
+	pas=0.5;
+	T=12.;
+}
+if (mypas==3){
+	pas=0.4;
+	T=15.;
+}
+if (mypas==4){
+	pas=0.3;
+	T=20.;
+}
+if (mypas==5){
+	pas=0.2;
+	T=30.;
+}
+if (mypas==6){
+	pas=0.15;
+	T=40.;
+}
+if (mypas==7){
+	pas=0.1;
+	T=60.;
+}
+if (mypas==8){
+	pas=0.06;
+	T=100.;
+}
+if (mypas==9){
+	pas=0.05;
+	T=120.;
+}
+if (mypas==10){
+	pas=0.04;
+	T=150.;
+}
+if (mypas==11){
+	pas=0.03;
+	T=200.;
+}
+if (mypas==12){
+	pas=0.02;
+	T=300.;
+}
+if (mypas==13){
+	pas=0.015;
+	T=400.;
+}
+if (mypas==14){
+	pas=0.01;
+	T=600.;
+}
+if (mypas==15){
+	pas=0.006;
+	T=1000.;
+}
+if (mypas==16){
+	pas=0.005;
+	T=1200.;
+}
+
+/////////////////////////////////////////////////////////////////////////////////// Données
+real t=0;
+
+
+func f1x = 0;//pi^2*sin(y*pi)*(1./2.+cos(x*pi));
+func f1y = 0;//-pi^2*sin(x*pi)*(1./2.+cos(y*pi));
+
+func f2x = 0;//-pi*sin(y*pi)*((1.+cos(x*pi))/2.);
+func f2y = 0;//pi*sin(x*pi)*((1.+cos(y*pi))/2.);
+
+
+
+///////////////////////////////////////////////////////////////////////////////////    Maillage de référence
+int finesse=-1;
+int coef;
+int coef1;
+while(finesse>16 || finesse<1){
+	cout<<"Choix du maillage : entre 1 et 16 du plus grossier au plus fin"<<endl;
+	cin>> finesse;
+}
+if (finesse==1){
+	coef=20;
+	coef1=10;
+}
+if (finesse==2){
+	coef=25;
+	coef1=13;
+}
+if (finesse==3){
+	coef=30;
+	coef1=15;
+}
+if (finesse==4){
+	coef=35;
+	coef1=18;
+}
+if (finesse==5){
+	coef=45;
+	coef1=23;
+}
+if (finesse==6){
+	coef=50;
+	coef1=25;
+}
+if (finesse==7){
+	coef=55;
+	coef1=28;
+}
+if (finesse==8){
+	coef=60;
+}
+if (finesse==9){
+	coef=65;
+	coef1=33;
+}
+if (finesse==10){
+	coef=70;
+	coef1=35;
+}
+if (finesse==11){
+	coef=75;
+	coef1=38;
+}
+if (finesse==12){
+	coef=80;
+	coef1=40;
+}
+if (finesse==13){
+	coef=85;
+	coef1=43;
+}
+if (finesse==14){
+	coef=90;
+	coef1=45;
+}
+if (finesse==15){
+	coef=95;
+	coef1=48;
+}
+if (finesse==16){
+	coef=100;
+	coef1=50;
+}
+
+border C01(t=0,0.5){x=t;y=0;label=1;};
+border C02(t=0,0.5){x=0.5;y=t;label=2;};
+border C03(t=0.5,1){x=t;y=0.5;label=3;};
+border C04(t=0.5,1){x=1;y=t;label=4;};
+border C05(t=0,1){x=1-t;y=1;label=5;};
+border C06(t=0,1){x=0;y=1-t;label=6;};
+
+// plot (C01(coef1)+C02(coef1)+C03(coef1)+C04(coef1)+C05(coef)+C06(coef));
+
+mesh Th= buildmesh(C01(coef1)+C02(coef1)+C03(coef1)+C04(coef1)+C05(coef)+C06(coef));
+// plot(Th);
+///////////////////////////////////////////////////////////////////////////////////    Formule variatonnelle
+varf mass(u,v) = int2d(Th)(u*v);
+
+varf rigidity(u,v) = int2d(Th)(dx(u)*dx(v)+dy(u)*dy(v));
+
+varf divergenceX(u,v) = -int2d(Th)(u*dx(v));
+
+varf divergenceY(u,v) = -int2d(Th)(u*dy(v));
+
+varf boundary(u,v) = on(1,2,3,4,5,6,u=1);
+
+varf boundaryentree(u,v) = on(6,u=1);
+
+varf boundarysortie(u,v) = on(4,u=1);
+
+varf boundaryautres(u,v) = on(1,2,3,5,u=1);
+
+varf SecMem1x(u,v) = int2d(Th)(f1x*v);
+
+varf SecMem1y(u,v) = int2d(Th)(f1y*v);
+
+varf SecMem2x(u,v) = int2d(Th)(f2x*v);
+
+varf SecMem2y(u,v) = int2d(Th)(f2y*v);
+
+varf SecMemp(u,v) = int2d(Th)(0*v);
+
+varf pmass(p,q) = int2d(Th)(p*q);
+
+///////////////////////////////////////////////////////////////////////////////////    Discrétisation en espace
+
+/// Espaces de discrétisation
+string discr="P2";
+fespace Uh(Th,P2); Uh u,v,a,b,uentree,usortie;
+fespace Ph(Th,P1); Ph p,q;
+int taille=2*Uh.ndof+Ph.ndof;
+
+/// Construction du problème linéaire
+
+matrix MASS = mass(Uh,Uh,tgv=mytgv);
+
+matrix RIGIDITY = rigidity(Uh,Uh,tgv=mytgv);
+
+matrix Bx = divergenceX(Ph,Uh,tgv=mytgv);
+
+matrix By = divergenceY(Ph,Uh,tgv=mytgv);
+
+matrix ZEROCARRE = 0*RIGIDITY;
+
+matrix ZERORECTD = 0*Bx;
+
+matrix ZERORECTG = 0*Bx';
+
+matrix PMASS = pmass(Ph,Ph,tgv=mytgv);
+
+matrix ZEROCARREF = 0.*PMASS;
+
+matrix ZEROCARREFP = 1e-6*PMASS;
+
+matrix BOUNDARYPENALIZATIONx = boundary(Uh,Uh,tgv=mytgv); 
+
+matrix BOUNDARYPENALIZATION = [[BOUNDARYPENALIZATIONx,ZEROCARRE,ZERORECTD],[ZEROCARRE,BOUNDARYPENALIZATIONx,ZERORECTD],[ZERORECTG,ZERORECTG,ZEROCARREF]]; 
+
+matrix Q=[[RIGIDITY,ZEROCARRE,Bx],[ZEROCARRE,RIGIDITY,By],[Bx',By',ZEROCARREFP]];
+
+matrix P=[[MASS,ZEROCARRE,ZERORECTD],[ZEROCARRE,MASS,ZERORECTD],[ZERORECTG,ZERORECTG,ZEROCARREF]];
+
+
+
+///////////////////////////////////////////////////////////////////////////////////    Discrétisation en espace
+
+
+
+/// stockage des résultats
+real[int,int] utab(Uh.ndof,T);
+real[int,int] vtab(Uh.ndof,T);
+real[int,int] ptab(Ph.ndof,T);
+
+/// Initialisation
+
+u=0;//(sin(y*pi)*(1.+cos(x*pi))/2.);
+v=0;//(-sin(x*pi)*(1.+cos(y*pi))/2.);
+utab(0:Uh.ndof-1,0)=u[];
+vtab(0:Uh.ndof-1,0)=v[];
+ptab(0:Ph.ndof-1,0)=0*p[];
+
+uentree=sin(y*pi);
+usortie=-sin(2*y*pi);
+// plot(usortie,fill=1,wait=1);
+/// Choix schema
+string schema;
+int type;
+while (type!=1 & type!=2 & type!=3){
+	cout<<"Choix du schema : Euler Implicite 1 ou Crank Nicolson 2 ou BDF2 3"<<endl;
+	cin>>type;
+}
+
+/// Application du schema
+if (type ==1){
+	/// Schéma d'Euler implicite
+	schema="EI";
+
+	
+	
+	for (int iter=1;iter<T;iter++){
+
+		
+		/// Mise à jour
+		t+=pas;
+		cout<<"iteration : "<<iter<<" t : "<<t<<endl;		
+		/// Construction du second membre
+
+		real[int] F(taille),Fx(Uh.ndof),Fy(Uh.ndof),Fp(Ph.ndof);
+
+		Uh sec1x,sec1y,sec2x,sec2y;
+		Ph secp;
+
+		sec1x[] = SecMem1x(0,Uh,tgv=mytgv);
+		sec1y[] = SecMem1y(0,Uh,tgv=mytgv);
+		sec1x[] *= cos(pi*t);
+		sec1y[] *= cos(pi*t);
+		
+		sec2x[] = SecMem2x(0,Uh,tgv=mytgv);
+		sec2y[] = SecMem2y(0,Uh,tgv=mytgv);
+		sec2x[] *= sin(pi*t);
+		sec2y[] *= sin(pi*t);		
+		
+		
+		
+		secp[] = SecMemp(0,Ph,tgv=mytgv);
+
+		Fx=sec1x[]+sec2x[];
+		Fy=sec1y[]+sec2y[];
+		Fp=secp[];
+
+		F=[Fx,Fy,Fp];
+
+		/// Construction du problème linéaire au pas de temps considéré
+		real[int] Uav(taille);
+		Uav=[utab(0:Uh.ndof-1,iter-1),vtab(0:Uh.ndof-1,iter-1),ptab(0:Ph.ndof-1,iter-1)];
+		matrix A=(P+pas*Q);
+		real[int] intermediaire1(taille);
+		intermediaire1=P*Uav;
+		real[int] B(taille);
+		B=intermediaire1+pas*F;
+		
+		/// Prise en compte des conditions aux bords dans la matrice à inverser
+		
+		matrix Ap=A+BOUNDARYPENALIZATION;
+		
+		/// Construction de l'autre matrice avec penalisation
+
+		real[int] BCe(Uh.ndof),BCs(Uh.ndof);
+
+		BCe=mytgv*uentree[];
+		BCe*=cos(t*pi);
+		BCs=mytgv*usortie[];
+		BCs*=cos(t*pi);
+
+		real[int] BOUNDARYENTREE = boundaryentree(0,Uh);
+		
+		real[int] BOUNDARYSORTIE = boundarysortie(0,Uh);
+
+		real[int] BOUNDARYAUTRES = boundaryautres(0,Uh);
+// 		cout<<BOUNDARYAUTRES<<endl;
+		real[int] ZEROD(Uh.ndof);
+		ZEROD=0.*B(Uh.ndof:2*Uh.ndof-1);
+		
+		B(Uh.ndof:2*Uh.ndof-1) = BOUNDARYAUTRES ? ZEROD : B(Uh.ndof:2*Uh.ndof-1);
+		B(Uh.ndof:2*Uh.ndof-1) = BOUNDARYENTREE ? ZEROD : B(Uh.ndof:2*Uh.ndof-1);
+		B(Uh.ndof:2*Uh.ndof-1) = BOUNDARYSORTIE ? ZEROD : B(Uh.ndof:2*Uh.ndof-1);
+
+
+		B(0:Uh.ndof-1) = BOUNDARYENTREE ? BCe : B(0:Uh.ndof-1);
+		B(0:Uh.ndof-1) = BOUNDARYSORTIE ? BCs : B(0:Uh.ndof-1);
+		B(0:Uh.ndof-1) = BOUNDARYAUTRES ? ZEROD : B(0:Uh.ndof-1);
+	
+		/// Résolution du problème linéaire
+		
+		real[int] U(taille);
+		set(Ap,eps=eps1,solver=UMFPACK);
+		U=Ap^-1*B;
+
+		/// Stockage des résultats
+		utab(0:Uh.ndof-1,iter)=U(0:Uh.ndof-1);
+		vtab(0:Uh.ndof-1,iter)=U(Uh.ndof:2*Uh.ndof-1);
+		ptab(0:Ph.ndof-1,iter)=U(2*Uh.ndof:2*Uh.ndof+Ph.ndof-1);
+		
+		Uh utest,vtest;
+		utest[]=utab(0:Uh.ndof-1,iter);
+		vtest[]=vtab(0:Uh.ndof-1,iter);
+		p[]=ptab(0:Ph.ndof-1,iter);
+		plot([utest,vtest],fill=1,wait=1,value=1);
+		
+		/// Test
+// 		real[int] test1(Uh.ndof);
+// 		real[int] test2(Uh.ndof);
+// 		real[int] test3(Uh.ndof);
+// 		real[int] test4(Uh.ndof);
+// 		real[int] test5(Uh.ndof);
+// 		real[int] test6(Uh.ndof);
+// 		real[int] test7(Uh.ndof);
+// 		real[int] test8(Uh.ndof);
+// 		test1=utest[];
+// 		test2=vtest[];
+// 		test5=0*u[];
+// 		test6=0*v[];
+// 		test7=0*u[];
+// 		test8=0*v[];
+// 		
+// 		test1(0:Uh.ndof-1)= BOUNDARYAUTRES ? test1(0:Uh.ndof-1) : test5(0:Uh.ndof-1);
+// // 		test5(0:Uh.ndof-1)= BOUNDARY3 ? test1(0:Uh.ndof-1) : test5(0:Uh.ndof-1);
+// 		
+// 		test2(0:Uh.ndof-1)= BOUNDARYAUTRES ? test2(0:Uh.ndof-1) : test6(0:Uh.ndof-1);
+// // 		test6(0:Uh.ndof-1)= BOUNDARY3 ? test2(0:Uh.ndof-1) : test6(0:Uh.ndof-1);
+// 
+// 		
+// 		cout<<"test x: "<<test1.max<<endl;
+// 		cout<<"test y: "<<test2.max<<endl;
+	
+// 		real[int] myres1(taille),myres2(taille);
+// 		myres1=Ap*U;
+// 		myres2=myres1-B;
+// 		cout<<"myres1 : "<<myres2.max<<endl;
+// 		
+// 		matrix Qtest=[[RIGIDITY,ZEROCARRE,Bx],[ZEROCARRE,RIGIDITY,By]];
+// 		matrix Ptest=[[MASS,ZEROCARRE,ZERORECTD],[ZEROCARRE,MASS,ZERORECTD]];
+// 		matrix Atest=(Ptest+pas*Qtest);
+// 		real[int] Btest=B(0:2*Uh.ndof-1);
+// 		real[int] Utest=U(0:2*Uh.ndof-1);
+// 		real[int] myres3(2*Uh.ndof),myres4(2*Uh.ndof);
+// 		myres3=Atest*U;
+// 		myres4=myres3-B;
+// 		//cout<<myres4<<endl;
+// 		ofstream Test("test.gp");
+// 		Test<<myres4;
+// 		cout<<"myres2 : "<<myres4.linfty<<endl;
+		
+		
+	}
+}
+
+if (type==2){
+	/// Schéma de Crank Nicolson
+	schema="CN";
+	real theta=0.5;
+	for (int iter=1;iter<T;iter++){
+		///Mise à jour
+		cout<<"iteration : "<<iter<<" t : "<<t<<endl;
+		t+=pas;
+		
+		/// Construction du second membre
+
+		real[int] F(taille),Fx(Uh.ndof),Fy(Uh.ndof),Fp(Ph.ndof);
+
+		Uh sec1x,sec1y,sec2x,sec2y;
+		Ph secp;
+
+		sec1x[] = SecMem1x(0,Uh,tgv=mytgv);
+		sec1y[] = SecMem1y(0,Uh,tgv=mytgv);
+		sec1x[] *= cos(pi*t);
+		sec1y[] *= cos(pi*t);
+		
+		sec2x[] = SecMem2x(0,Uh,tgv=mytgv);
+		sec2y[] = SecMem2y(0,Uh,tgv=mytgv);
+		sec2x[] *= sin(pi*t);
+		sec2y[] *= sin(pi*t);		
+		
+		
+		
+		secp[] = SecMemp(0,Ph,tgv=mytgv);
+
+		Fx=sec1x[]+sec2x[];
+		Fy=sec1y[]+sec2y[];
+		Fp=secp[];
+
+		F=[Fx,Fy,Fp];
+		
+		real[int] Fav(taille),Fxav(Uh.ndof),Fyav(Uh.ndof),Fpav(Ph.ndof);
+
+		Uh sec1xav,sec1yav,sec2xav,sec2yav;
+		Ph secpav;
+
+		sec1xav[] = SecMem1x(0,Uh,tgv=mytgv);
+		sec1yav[] = SecMem1y(0,Uh,tgv=mytgv);
+		sec1xav[] *= cos(pi*(t-pas));
+		sec1yav[] *= cos(pi*(t-pas));
+		
+		sec2xav[] = SecMem2x(0,Uh,tgv=mytgv);
+		sec2yav[] = SecMem2y(0,Uh,tgv=mytgv);
+		sec2xav[] *= sin(pi*(t-pas));
+		sec2yav[] *= sin(pi*(t-pas));		
+		
+		
+		
+		secpav[] = SecMemp(0,Ph,tgv=mytgv);
+
+		Fxav=sec1xav[]+sec2xav[];
+		Fyav=sec1yav[]+sec2yav[];
+		Fpav=secpav[];
+
+		Fav=[Fxav,Fyav,Fpav];		
+		
+		
+		///Construction du problème linéaire au pas de temps considéré
+		real[int] Uav(taille);
+		Uav=[utab(0:Uh.ndof-1,iter-1),vtab(0:Uh.ndof-1,iter-1),ptab(0:Ph.ndof-1,iter-1)];
+		matrix A=(P+(pas*theta)*Q);
+		matrix intermediaire1=P+(-pas*(1-theta))*Q;
+		real[int] intermediaire2=intermediaire1*Uav;
+		real[int] B=intermediaire2+theta*pas*F;
+		B=B+(1-theta)*pas*Fav;
+	
+		///Prise en compte des conditions aux bords dans la matrice à inverser
+	
+		matrix Ap=A+BOUNDARYPENALIZATION;
+	
+		/// Construction de l'autre matrice avec penalisation
+
+		real[int] BCe(Uh.ndof),BCs(Uh.ndof);
+
+		BCe=mytgv*uentree[];
+		BCe*=cos(t*pi);
+		BCs=mytgv*usortie[];
+		BCs*=cos(t*pi);
+
+		real[int] BOUNDARYENTREE = boundaryentree(0,Uh);
+		
+		real[int] BOUNDARYSORTIE = boundarysortie(0,Uh);
+
+		real[int] BOUNDARYAUTRES = boundaryautres(0,Uh);
+// 		cout<<BOUNDARYAUTRES<<endl;
+		real[int] ZEROD(Uh.ndof);
+		ZEROD=0.*B(Uh.ndof:2*Uh.ndof-1);
+		
+		B(Uh.ndof:2*Uh.ndof-1) = BOUNDARYAUTRES ? ZEROD : B(Uh.ndof:2*Uh.ndof-1);
+		B(Uh.ndof:2*Uh.ndof-1) = BOUNDARYENTREE ? ZEROD : B(Uh.ndof:2*Uh.ndof-1);
+		B(Uh.ndof:2*Uh.ndof-1) = BOUNDARYSORTIE ? ZEROD : B(Uh.ndof:2*Uh.ndof-1);
+
+
+		B(0:Uh.ndof-1) = BOUNDARYENTREE ? BCe : B(0:Uh.ndof-1);
+		B(0:Uh.ndof-1) = BOUNDARYSORTIE ? BCs : B(0:Uh.ndof-1);
+		B(0:Uh.ndof-1) = BOUNDARYAUTRES ? ZEROD : B(0:Uh.ndof-1);
+
+
+		///Résolution du problème linéaire
+	
+		real[int] U(taille);
+		set(Ap,eps=eps1,solver=UMFPACK);
+		U=Ap^-1*B;
+	
+		///Stockage des résultats
+		utab(0:Uh.ndof-1,iter)=U(0:Uh.ndof-1);
+		vtab(0:Uh.ndof-1,iter)=U(Uh.ndof:2*Uh.ndof-1);
+		ptab(0:Ph.ndof-1,iter)=U(2*Uh.ndof:2*Uh.ndof+Ph.ndof-1);
+
+	}
+}
+
+
+if (type==3){
+	/// Schéma BDF2
+	schema="BDF2";
+	real theta=0.5;
+	
+	///Mise à jour
+	cout<<"iteration : "<<1<<" t : "<<t<<endl;
+	t+=pas;
+	
+	/// Construction du second membre
+
+	real[int] F(taille),Fx(Uh.ndof),Fy(Uh.ndof),Fp(Ph.ndof);
+
+	Uh sec1x,sec1y,sec2x,sec2y;
+	Ph secp;
+
+	sec1x[] = SecMem1x(0,Uh,tgv=mytgv);
+	sec1y[] = SecMem1y(0,Uh,tgv=mytgv);
+	sec1x[] *= cos(pi*t);
+	sec1y[] *= cos(pi*t);
+	
+	sec2x[] = SecMem2x(0,Uh,tgv=mytgv);
+	sec2y[] = SecMem2y(0,Uh,tgv=mytgv);
+	sec2x[] *= sin(pi*t);
+	sec2y[] *= sin(pi*t);		
+	
+	
+	
+	secp[] = SecMemp(0,Ph,tgv=mytgv);
+
+	Fx=sec1x[]+sec2x[];
+	Fy=sec1y[]+sec2y[];
+	Fp=secp[];
+
+	F=[Fx,Fy,Fp];
+	
+	real[int] Fav(taille),Fxav(Uh.ndof),Fyav(Uh.ndof),Fpav(Ph.ndof);
+
+	Uh sec1xav,sec1yav,sec2xav,sec2yav;
+	Ph secpav;
+
+	sec1xav[] = SecMem1x(0,Uh,tgv=mytgv);
+	sec1yav[] = SecMem1y(0,Uh,tgv=mytgv);
+	sec1xav[] *= cos(pi*(t-pas));
+	sec1yav[] *= cos(pi*(t-pas));
+	
+	sec2xav[] = SecMem2x(0,Uh,tgv=mytgv);
+	sec2yav[] = SecMem2y(0,Uh,tgv=mytgv);
+	sec2xav[] *= sin(pi*(t-pas));
+	sec2yav[] *= sin(pi*(t-pas));		
+	
+	
+	
+	secpav[] = SecMemp(0,Ph,tgv=mytgv);
+
+	Fxav=sec1xav[]+sec2xav[];
+	Fyav=sec1yav[]+sec2yav[];
+	Fpav=secpav[];
+
+	Fav=[Fxav,Fyav,Fpav];		
+	
+	
+	///Construction du problème linéaire au pas de temps considéré
+	real[int] Uav(taille);
+	Uav=[utab(0:Uh.ndof-1,0),vtab(0:Uh.ndof-1,0),ptab(0:Ph.ndof-1,0)];
+	matrix A=(P+(pas*theta)*Q);
+	matrix intermediaire1=P+(-pas*(1-theta))*Q;
+	real[int] intermediaire2=intermediaire1*Uav;
+	real[int] B=intermediaire2+theta*pas*F;
+	B=B+(1-theta)*pas*Fav;
+
+	///Prise en compte des conditions aux bords dans la matrice à inverser
+
+	matrix Ap=A+BOUNDARYPENALIZATION;
+
+	/// Construction de l'autre matrice avec penalisation
+
+	real[int] BCe(Uh.ndof),BCs(Uh.ndof);
+
+	BCe=mytgv*uentree[];
+	BCe*=cos(t*pi);
+	BCs=mytgv*usortie[];
+	BCs*=cos(t*pi);
+
+	real[int] BOUNDARYENTREE = boundaryentree(0,Uh);
+	
+	real[int] BOUNDARYSORTIE = boundarysortie(0,Uh);
+
+	real[int] BOUNDARYAUTRES = boundaryautres(0,Uh);
+// 		cout<<BOUNDARYAUTRES<<endl;
+	real[int] ZEROD(Uh.ndof);
+	ZEROD=0.*B(Uh.ndof:2*Uh.ndof-1);
+	
+	B(Uh.ndof:2*Uh.ndof-1) = BOUNDARYAUTRES ? ZEROD : B(Uh.ndof:2*Uh.ndof-1);
+	B(Uh.ndof:2*Uh.ndof-1) = BOUNDARYENTREE ? ZEROD : B(Uh.ndof:2*Uh.ndof-1);
+	B(Uh.ndof:2*Uh.ndof-1) = BOUNDARYSORTIE ? ZEROD : B(Uh.ndof:2*Uh.ndof-1);
+
+
+	B(0:Uh.ndof-1) = BOUNDARYENTREE ? BCe : B(0:Uh.ndof-1);
+	B(0:Uh.ndof-1) = BOUNDARYSORTIE ? BCs : B(0:Uh.ndof-1);
+	B(0:Uh.ndof-1) = BOUNDARYAUTRES ? ZEROD : B(0:Uh.ndof-1);
+
+
+	///Résolution du problème linéaire
+
+	real[int] U(taille);
+	set(Ap,eps=eps1,solver=UMFPACK);
+	U=Ap^-1*B;
+
+	///Stockage des résultats
+	utab(0:Uh.ndof-1,1)=U(0:Uh.ndof-1);
+	vtab(0:Uh.ndof-1,1)=U(Uh.ndof:2*Uh.ndof-1);
+	ptab(0:Ph.ndof-1,1)=U(2*Uh.ndof:2*Uh.ndof+Ph.ndof-1);
+
+	
+// 	utab(0:Uh.ndof-1,1)=u[]*cos(pi*t);
+// 	vtab(0:Uh.ndof-1,1)=v[]*cos(pi*t);
+// 	ptab(0:Uh.ndof-1,1)=p[]*cos(pi*t);
+
+		
+	////////////// Boucle en temps
+	
+	for (int iter=2;iter<T;iter++){
+		// Mise à jour
+		cout<<"iteration : "<<iter<<" t : "<<t<<endl;
+		t+=pas;
+		
+		/// Construction du second membre
+
+		real[int] F(taille),Fx(Uh.ndof),Fy(Uh.ndof),Fp(Ph.ndof);
+
+		Uh sec1x,sec1y,sec2x,sec2y;
+		Ph secp;
+
+		sec1x[] = SecMem1x(0,Uh,tgv=mytgv);
+		sec1y[] = SecMem1y(0,Uh,tgv=mytgv);
+		sec1x[] *= cos(pi*t);
+		sec1y[] *= cos(pi*t);
+		
+		sec2x[] = SecMem2x(0,Uh,tgv=mytgv);
+		sec2y[] = SecMem2y(0,Uh,tgv=mytgv);
+		sec2x[] *= sin(pi*t);
+		sec2y[] *= sin(pi*t);		
+		
+		
+		
+		secp[] = SecMemp(0,Ph,tgv=mytgv);
+
+		Fx=sec1x[]+sec2x[];
+		Fy=sec1y[]+sec2y[];
+		Fp=secp[];
+
+		F=[Fx,Fy,Fp];
+		
+		/// Construction du problème linéaire au pas de temps considéré
+		real[int] U0(taille),U1(taille);
+		U0=[utab(0:Uh.ndof-1,iter-2),vtab(0:Uh.ndof-1,iter-2),ptab(0:Ph.ndof-1,iter-2)];
+		U1=[utab(0:Uh.ndof-1,iter-1),vtab(0:Uh.ndof-1,iter-1),ptab(0:Ph.ndof-1,iter-1)];
+		matrix A=(P+(pas*2./3.)*Q);
+		real[int] intermediaire1(taille);
+		intermediaire1=P*U1;
+		intermediaire1=(4./3.)*intermediaire1;
+		real[int] intermediaire2(taille);
+		intermediaire2=P*U0;
+		intermediaire2=(-1./3.)*intermediaire2;
+		real[int] intermediaire3(taille);
+		intermediaire3=(2./3.)*pas*F;
+		real[int] B=intermediaire1+intermediaire2;
+		B=B+intermediaire3;
+		
+		/// Prise en compte des conditions aux bords dans la matrice à inverser
+	
+		matrix Ap=A+BOUNDARYPENALIZATION;
+	
+		/// Construction de l'autre matrice avec penalisation
+
+		real[int] BCe(Uh.ndof),BCs(Uh.ndof);
+
+		BCe=mytgv*uentree[];
+		BCe*=cos(t*pi);
+		BCs=mytgv*usortie[];
+		BCs*=cos(t*pi);
+
+		real[int] BOUNDARYENTREE = boundaryentree(0,Uh);
+		
+		real[int] BOUNDARYSORTIE = boundarysortie(0,Uh);
+
+		real[int] BOUNDARYAUTRES = boundaryautres(0,Uh);
+// 		cout<<BOUNDARYAUTRES<<endl;
+		real[int] ZEROD(Uh.ndof);
+		ZEROD=0.*B(Uh.ndof:2*Uh.ndof-1);
+		
+		B(Uh.ndof:2*Uh.ndof-1) = BOUNDARYAUTRES ? ZEROD : B(Uh.ndof:2*Uh.ndof-1);
+		B(Uh.ndof:2*Uh.ndof-1) = BOUNDARYENTREE ? ZEROD : B(Uh.ndof:2*Uh.ndof-1);
+		B(Uh.ndof:2*Uh.ndof-1) = BOUNDARYSORTIE ? ZEROD : B(Uh.ndof:2*Uh.ndof-1);
+
+
+		B(0:Uh.ndof-1) = BOUNDARYENTREE ? BCe : B(0:Uh.ndof-1);
+		B(0:Uh.ndof-1) = BOUNDARYSORTIE ? BCs : B(0:Uh.ndof-1);
+		B(0:Uh.ndof-1) = BOUNDARYAUTRES ? ZEROD : B(0:Uh.ndof-1);
+
+		/// Résolution du problème linéaire
+	
+		real[int] U2(taille);
+		set(Ap,eps=eps1,solver=UMFPACK);
+		U2=Ap^-1*B;
+	
+		/// Stockage des résultats
+		utab(0:Uh.ndof-1,iter)=U2(0:Uh.ndof-1);
+		vtab(0:Uh.ndof-1,iter)=U2(Uh.ndof:2*Uh.ndof-1);
+		ptab(0:Ph.ndof-1,iter)=U2(2*Uh.ndof:2*Uh.ndof+Ph.ndof-1);
+
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////    Visualisation et Sauvegarde des données
+
+/// Création des divers dossiers de stockage
+// exec("mkdir "+"Vitesses");
+// exec("mkdir "+"Vitesses/"+finesse);
+// exec("mkdir "+"Vitesses/"+finesse+"/"+schema);
+// exec("mkdir "+"Vitesses/"+finesse+"/"+schema+"/"+discr);
+// exec("mkdir "+"Vitesses/"+finesse+"/"+schema+"/"+discr+"/"+pas);
+// exec("mkdir "+"Vitesses/"+finesse+"/"+schema+"/"+discr+"/"+pas+"/u");
+// exec("mkdir "+"Vitesses/"+finesse+"/"+schema+"/"+discr+"/"+pas+"/v");
+// exec("mkdir "+"Vitesses/"+finesse+"/"+schema+"/"+discr+"/"+pas+"/p");
+
+
+for (int i=0;i<T;i++){
+	u[]=utab(0:Uh.ndof-1,i);
+	v[]=vtab(0:Uh.ndof-1,i);
+	p[]=ptab(0:Ph.ndof-1,i);
+	
+	/// Visualisation
+	plot([u,v],wait=1,value=1,cmm=i);
+	
+	/// Stockage
+// 	ofstream U ("Vitesses/"+finesse+"/"+schema+"/"+discr+"/"+pas+"/u/u"+i+".txt");
+// 	ofstream V ("Vitesses/"+finesse+"/"+schema+"/"+discr+"/"+pas+"/v/v"+i+".txt");
+// 	ofstream P ("Vitesses/"+finesse+"/"+schema+"/"+discr+"/"+pas+"/p/p"+i+".txt");
+// 	U<<u[];
+// 	V<<v[];
+// 	P<<p[];
+}
+
+
+
+// cout<<endl<<"Rappel"<<endl<<endl<<"Maillage : "<<finesse<<endl<<"Schema : "<<schema<<endl<<"Pas de temps : "<<pas<<endl<<endl;
+
+

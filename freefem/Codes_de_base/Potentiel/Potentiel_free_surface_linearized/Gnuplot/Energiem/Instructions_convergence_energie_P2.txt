@@ -1,0 +1,19 @@
+############ Gnuplot
+
+
+set autoscale
+set ylabel 'Energie'
+set xlabel 't'
+set xrange [0:6]
+plot 'convergence_5_0.004_P2_E.gp' u 1:2 w line t 'm: 5 ; pas : 15'
+
+#plot 'convergence_2_0.1_P2_L2.gp' u 1:2 w line t 'm: 15 ; pas :7'
+
+replot 'convergence_10_0.004_P2_E.gp' u 1:2 w line t 'm: 10 ; pas :15'
+
+replot 'convergence_15_0.004_P2_E.gp' u 1:2 w line t 'm: 15 ; pas :15'
+
+set term postscript enhanced color
+set output "convergence_energie_0.004_LinfL2.eps"
+replot
+unset output

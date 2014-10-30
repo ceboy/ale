@@ -1,0 +1,9 @@
+############ Gnuplot
+
+
+set autoscale
+
+plot 'Erreurs/grossier/EI/P2/0.1/erreurL2.gp' w line
+replot 'Erreurs/grossier/EI/P2/0.01/erreurL2.gp' w line
+replot 'Erreurs/grossier/EI/P2/0.05/erreurL2.gp' w line
+
